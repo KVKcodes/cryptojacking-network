@@ -1,0 +1,232 @@
+﻿The Problem
+Amazon Web Services
+Security researchers stumbled upon a long-lasting cryptojacking saga called “EleKtra-Leak.” In this cyber odyssey, mischievous culprits clone public GitHub repositories, making off with exposed AWS credentials. Specifically, key pairs are used to access the victim’s AWS accounts. The “clone and exploit” happens within minutes of an unaware victim accidentally posting a key pair. They then unleash a legion of Amazon Elastic Compute Cloud (EC2) instances to mine the cryptocurrency Monero. Researchers witnessed a staggering 474 miners controlled by what they charmingly call “potentially actor-controlled EC2 instances.”
+
+AWS tries to help with its security practices, diligently alerting when credentials have been compromised. If AWS determines a key pair has been compromised (in this case, made public), they try to shut down the crypto criminals by applying the AWSCompromisedKeyQuarantine policy to the customer’s key pair. (Note: If you get an email from AWS about this policy being applied to your account, READ IT…they are trying to help.). However, our hackers are very good at unearthing AWS keys that the AWSCompromisedKeyQuarantine policy misses. Later in this article, we will give you a best practice to stop this from happening to you.
+
+Cyber researchers have confirmed that the attackers indeed grab credentials from GitHub, despite AWS policies playing a rapid game of catch-up. Our actors are crafty, using methods beyond the researchers’ detective skills. The experts predict that credentials might also be sourced elsewhere, adding a dash of mystery to the plot.
+
+Once they get their grubby hands on AWS credentials, our cyber rogues, working from behind the curtain of a VPN, go into recon mode. They snoop around the account, checking out the regions like spies scoping out their turf. Then, they get to work, creating security groups and launching EC2 instances across every enabled region. In a synchronized dance across multiple regions, they perform more than 400 API calls in a mere seven minutes, leaving behind a CloudTrail of breadcrumbs. All this is done by hiding as much as possible behind the secrecy granted by only using VPN connections to AWS.
+
+Now, here’s where it gets interesting. The EC2 instances they summon are not small; think more like the c5a.24xlarge with 96 vCPUs and 192 MiB of memory! Why such blatant power grabs? Because when you’re cryptojacking, you need the VIP treatment – the processing power to mine Monero at warp speed. Then, in a brilliant twist, Google Drive hosts their mischievous mining payload. This is a rather clever move, as Google Drive’s URLs are like anonymous tips, leading investigators on a wild goose chase. These digital rogues remain elusive, dabbling in crypto with Monero’s privacy cloak, making them harder to catch.  
+
+Note: In case you are wondering, the on-demand cost of a c5a.24xlarge, as of November 2023, is $3.696/hour. With ten virtual machines mining for seven days, you would owe AWS just over $6,200!!!
+
+Cybersecurity researchers recommend configuring secret scanning to prevent AWS credentials from doing the digital walk of shame on GitHub. And if any credentials do the unexpected and show up, cut the API connections immediately. It’s the cybersecurity equivalent of a superhero swooping in to save the day. And that, dear readers, is the tale of EleKtra-Leak – a cyber romp filled with intrigue, mischief, and a dash of Monero mining madness.
+
+The Solution
+“Fine, fine, fine! How do I help stop this from happening to my EC2 garden!” Well, it’s pretty easy. Check it out:
+
+Log into your personal or organizational GitHub account and click on your avatar icon in the top right corner (in fact, you should check all GitHub accounts you might use, sending friendly messages to the admin of accounts where you have no control) and then click on Settings.
+
+
+Once the Settings page opens, under Security, select Code security and analysis in the left menu.
+
+
+In Code security and analysis, scroll to the bottom of the Secret scanning section. You have two options to enable:
+
+Secret scanning: This will start scanning any new repos you create.
+Push protection:  With push protection, if anyone sends an update (a “commit” in git terminology) that contains a supported secret, the commit is blocked.
+The Recommendation
+Enable both options! For both options, select the Enable all button, and that’s all you have to do to improve your security.
+
+
+Click the image above to watch this video from our youtube channel
+
+The Special Note
+Now, a special note is required. Notice that the language in the GitHub secret scanning option says, “Automatically enable for new public repositories.”  That is to say, if you already have a compromised key in a repo, GitHub will not catch it.
+
+The Closing
+Remember, in the ever-evolving landscape of cybersecurity, complacency is the enemy. Embrace a proactive approach, fortifying your digital fortress with the unwavering support of automated systems like AI and automatic scanning. So, stay engaged with the latest news, keep your training ongoing and relevant, and make enabling security features the default behavior for yourself and your organization.
+
+…and help keep that AWS bill down. 
+
+Ready to Take Your Tech Career to the Next Level?
+At Digital Cloud Training, we’re dedicated to your success. Our courses offer up-to-date content, equipping you with the expertise to stand out in the competitive tech job market.
+
+Our On-Demand Training allows you to learn at your own pace, fitting seamlessly into your schedule. Dive into the world of cloud computing whenever and wherever suits you best.
+
+Our Challenge Labs provide practical, real-world scenarios where you can apply your newfound knowledge without the risk of unexpected cloud costs. Gain hands-on experience and sharpen your skills.
+
+For those seeking an immersive experience, our Cloud Mastery Bootcamp delivers live, job-ready training. Led by industry experts, this accelerated program can get you certified faster than you thought possible.
+
+It’s time to propel your tech career forward. Join us at Digital Cloud Training and unlock your full potential in the world of cloud computing.
+
+Related posts:
+Cloud Computing
+AWS Lambda and Boto3
+Linux File System and File Permissions
+Categories:
+Cloud Computing
+Responses
+Your email address will not be published. Required fields are marked *
+
+-----------------
+
+To remain undetected for longer in cloud environments, attackers have started to abuse less-common services that don’t get a high level of security scrutiny. This is the case of a recently discovered cryptojacking operation, called AMBERSQUID, that deploys cryptocurrency mining malware on AWS Amplify, AWS Fargate, and Amazon SageMaker instead of the more obvious Amazon Elastic Compute Cloud (Amazon EC2).
+
+“The AMBERSQUID operation was able to exploit cloud services without triggering the AWS requirement for approval of more resources, as would be the case if they only spammed EC2 instances,” researchers from security firm Sysdig said in a report. “Targeting multiple services also poses additional challenges, like incident response, since it requires finding and killing all miners in each exploited service.”
+
+How the AMBERSQUID cryptojacking campaign works
+The Sysdig researchers came across the cryptojacking campaign while scanning 1.7 million Linux container images hosted on Docker Hub for malicious payloads. One container showed indicators of cryptojacking when executed and further analysis revealed several similar containers uploaded by different accounts since May 2022 that download cryptocurrency miners hosted on GitHub. Judging by the comments used in the malicious scripts inside the containers, the researchers believe the attackers behind the campaign are from Indonesia.
+
+When deployed on AWS using stolen credentials, the malicious Docker images execute a series of scripts, starting with one that sets up various AWS roles and permissions. One of the created roles is called AWSCodeCommit-Role and is given access to AWS Amplify service, a service that lets developers build, deploy and host full-stack web and mobile applications on AWS. This role also gets access to AWS CodeCommit, a managed source-code repository service, and AWS CloudWatch, an infrastructure monitoring and data visualization service.
+
+A second role that is created by the container scripts is called sugo-role, and this role has full access to SageMaker, another AWS service that allows data scientists to build, train, and deploy machine-learning models. A third created role is ecsTaskExecutionRole with access to the Amazon Elastic Container Service (Amazon ECS), an AWS-native Docker container management system.
+
+The attackers then start abusing the newly created roles in various services, beginning with AWS CodeCommit where they create a private Git repository that hosts the code they need for the next steps of their attack. This allows them to not leave the AWS ecosystem after the initial compromise, lowering the chances of outbound traffic alerts.
+
+The Git repository is used to host the code for a malicious app designed to be built and deployed with the AWS Amplify service. The script then generates five Amplify apps to be deployed in different AWS regions and as part of their building scripts, one command downloads and runs a cryptominer. Since the cryptomining and resource theft happens during the app building, the attackers added code to prolong this process as much as possible. When the apps eventually finish building, another script is executed that updates the code and the process is restarted, starting the building phase again and therefore the cryptomining.
+
+Another script from the container sets up a similar process, but on the Amazon ECS service, which allows deploying containers to EC2 instances, AWS Fargate — Amazon’s serverless compute engine — or on-premises virtual machines.
+
+The script gives the needed permissions to the ecsTaskExecutionRole account, which is then used to set up an ECS task that sets up a container on AWS Fargate with two virtual CPUs and 4GB of RAM and deploys a Linux image that bundles a miner. The task is configured with a desiredCount of 30, which means 30 instances will be created.
+
+Explore related questions
+What is cryptojacking?
+How can cloud services improve detection of such attacks?
+What are the typical signs of a compromised cloud service?
+Can cryptojacking affect personal cloud storage accounts?
+What measures can users take to secure their cloud credentials?
+Ask a question
+
+Ask
+Yet another target in this campaign is AWS CodeBuild, a continuous integration service that can be used to compile and test source code. The specification file for CodeBuild to execute tasks can include build commands and the attackers included commands to execute their miner. The attackers also set the “timeout-in-minutes” value for the build task to the maximum of eight hours to ensure their miner will run for that long before being restarted.
+
+Next, the attackers targeted AWS CloudFormation, an infrastructure-as-code service that allows users to provision AWS and third-party resources via templates. These resources can be grouped into stacks and controlled as one unit.
+
+“The attackers’ scripts create several CloudFormation stacks that originated from a template that defines an EC2 Image Builder component,” the researchers said. “Within this component, they put commands to run a miner during the build phase of the image. This is similar to the commands that can be defined in a Dockerfile.”
+
+Like with Amplify and CodeBuild, the mining process is spawned during a build phase. The attackers tried to prolong it as much as possible by adding cron commands in the template to start a new build every minute.
+
+The attackers also abused Amazon EC2 Auto Scaling, a feature that allows users to add or remove EC2 instances using scaling policies defined in templates. This feature was used to create two groups of eight On-Demand and Spot instances each running a Docker container image with a miner.
+
+Finally, the hackers also abused machine learning compute instances running in Jupyter Notebook App as part of the Amazon SageMaker service. For every Jupyter Notebook instance, users can define a lifecycle configuration that includes a collection of shell scripts that get executed when instances are created. They used this functionality to include a command that executes Docker and deploys one of their Docker Hub images containing a miner. By abusing all these services with rogue container instances and build tasks executed in different regions, victims can incur running costs of $2,244 per day and higher, according to the Sysdig researchers.
+
+Cryptojackers can abuse any service with access to compute resources
+“Cloud Service Providers (CSPs) like AWS provide a vast array of different services for their customers,” the researchers said. “While most financially motivated attackers target compute services, such as EC2, it is important to remember that many other services also provide access to compute resources (albeit it more indirectly). It is easy for these services to be overlooked from a security perspective since there is less visibility compared to that available through runtime threat detection.”
+
+Since many of these services are only meant to execute code temporarily, installing runtime detection solutions is not always viable. In that case, organizations should have logging and monitoring in place for the usage trends of such services on their accounts to identify anomalies and suspicious behavior.
+
+-------------------------------
+
+
+New AMBERSQUID Cryptojacking Operation Targets Uncommon AWS Services
+Sep 18, 2023NewsroomCloud Security / Cryptocurrecy
+Cryptojacking Operation
+A novel cloud-native cryptojacking operation has set its eyes on uncommon Amazon Web Services (AWS) offerings such as AWS Amplify, AWS Fargate, and Amazon SageMaker to illicitly mine cryptocurrency.
+
+The malicious cyber activity has been codenamed AMBERSQUID by cloud and container security firm Sysdig.
+
+"The AMBERSQUID operation was able to exploit cloud services without triggering the AWS requirement for approval of more resources, as would be the case if they only spammed EC2 instances," Sysdig security researcher Alessandro Brucato said in a report shared with The Hacker News.
+
+"Targeting multiple services also poses additional challenges, like incident response, since it requires finding and killing all miners in each exploited service."
+
+Cybersecurity
+Sysdig said it discovered the campaign following an analysis of 1.7 million images on Docker Hub, attributing it with moderate confidence to Indonesian attackers based on the use of Indonesian language in scripts and usernames.
+
+Some of these images are engineered to execute cryptocurrency miners downloaded from actor-controlled GitHub repositories, while others run shell scripts targeting AWS.
+
+A key characteristic is the abuse of AWS CodeCommit, which is used to host private Git repositories, to "generate a private repository which they then used in different services as a source."
+
+Cryptojacking Operation
+The repository contains the source code of an AWS Amplify app that, in turn, is leveraged by a shell script to create a Amplify web app and ultimately launch the cryptocurrency miner.
+
+The threat actors have also been observed employing shell scripts to perform cryptojacking in AWS Fargate and SageMaker instances, incurring significant compute costs for the victims.
+
+Sysdig estimated that AMBERSQUID could result in losses of more than $10,000 per day if it's scaled to target all AWS regions. A further analysis of the wallet addresses used reveals that the attackers have earned more than $18,300 in revenues to date.
+
+Cybersecurity
+This is not the first time Indonesian threat actors have been linked to cryptojacking campaigns. In May 2023, Permiso P0 Labs detailed an actor named GUI-vil which was spotted leveraging Amazon Web Services (AWS) Elastic Compute Cloud (EC2) instances to carry out crypto mining operations.
+
+Michael Clark, director of threat research at Sysdig, told The Hacker News that "there doesn't appear to be much cross-over between the TTPs of the two attacks," and that they are most likely carried out by different groups.
+
+"But it does show that Indonesia has a thriving community around cryptojacking," Clark pointed out.
+
+"While most financially motivated attackers target compute services, such as EC2, it is important to remember that many other services also provide access to compute resources (albeit it more indirectly)," Brucato said.
+
+"It is easy for these services to be overlooked from a security perspective since there is less visibility compared to that available through runtime threat detection."
+
+--------
+
+Security researchers have uncovered a multi-year cryptojacking campaign they claim autonomously clones GitHub repositories and steals their exposed AWS credentials.
+
+Given the name "EleKtra-Leak" by researchers at Palo Alto Networks's Unit 42, the criminals behind the campaign are credited with regularly stealing AWS credentials within five minutes of them being exposed in GitHub repositories.
+
+Minutes later, multiple Amazon Elastic Compute Cloud (EC2) instances can be launched in as many regions as possible to mine Monero. In the space of just over a month, between August 30 and October 6, the researchers identified 474 different miners being operated by "potentially actor-controlled EC2 instances."
+
+Initial tests showed that GitHub's secret scanning feature largely worked as intended, notifying AWS of an exposed credential in a repository with the cloud provider then issuing a policy to prevent misuse within minutes.
+
+"We believe the threat actor might be able to find exposed AWS keys that aren't automatically detected by AWS and subsequently control these keys outside of the AWSCompromisedKeyQuarantine policy," said William Gamazo and Nathaniel Quist, senior principal researcher and manager of cloud threat intelligence at Unit 42, respectively.
+
+"According to our evidence, they likely did. In that case, the threat actor could proceed with the attack with no policy interfering with their malicious actions to steal resources from the victims.
+
+"Even when GitHub and AWS are coordinated to implement a certain level of protection when AWS keys are leaked, not all cases are covered. We highly recommend that CI/CD security practices, like scanning repos on commit, should be implemented independently."
+
+AWS's quarantine policy is effective at stopping attacks, and the researchers overwrote it in their own repositories so they could gain greater visibility into the campaign by letting it run as the attacker intended.
+
+Unit 42 confirmed to The Register that the credentials found in the research were sourced via GitHub by the attackers, despite the AWS policy being applied rapidly, but attackers also exhibited evidence of using multiple methods to acquire the AWS logins outside the scope of the researchers' investigation.
+
+Current predictions are that they are either retrieving credentials via GitHub but through other means, or finding them exposed on a different platform.
+
+"Despite successful AWS quarantine policies, the campaign maintains continuous fluctuation in the number and frequency of compromised victim accounts," the researchers said.
+
+"Several speculations as to why the campaign is still active include that this campaign is not solely focused on exposed GitHub credentials or Amazon EC2 instance targeting."
+
+Once the credentials are acquired, the criminals – working behind a VPN – perform a reconnaissance operation to understand more about the account itself, such as the regions it has enabled. They then create security groups and launch EC2 instances across as many regions that are enabled for the account.
+
+Cryptojackers spread their nets to capture more than just EC2
+Japan's Supreme Court rules cryptojacking scripts are not malware
+Bogus cryptocurrency apps steal millions in mere months
+AstraLocker ransomware reportedly closes doors to pursue cryptojacking
+"They repeated the same operations across multiple regions, generating a total of more than 400 API calls and taking only seven minutes, according to CloudTrail logging," said the researchers. 
+
+"This indicates that the actor is successfully able to obscure their identity while launching automated attacks against AWS account environments."
+
+Diagram of the attack chain in the EleKtra-Leak campaign
+Diagram of the attack chain in the EleKtra-Leak campaign
+
+The EC2 instances launched were large-format, mostly of type c5a.24xlarge. It's typical of cryptojacking campaigns to use these as it offers attackers greater processing resources for faster results.
+
+Google Drive hosts the malicious mining payload. Using legitimate services is a tactic increasingly adopted by attackers due to the protections they afford. In Google Drive's case, the platform's URLs are anonymous and can't be linked back to a specific Google Account.
+
+It was just one technique that made attributing the attack difficult for the researchers. Another issue was the attackers' goal of mining Monero, a cryptocurrency with built-in privacy protections, again limiting their ability to trace the owner of wallets.
+
+The miner payload is stored as an encrypted file and decrypted after it's downloaded, and researchers said it bears a resemblance to an earlier campaign from 2021.
+
+Intezer previously documented a cryptojacking campaign that used malware with the same hash as the latest example, leading researchers to believe they could be at least connected.
+
+For those looking for ways to mitigate the threat of exposing AWS credentials via GitHub, configuring secret scanning is shown to be a highly effective tool to prevent misuse.
+
+For any AWS credentials that are exposed, the API connections made using them should be immediately revoked, the researchers said. ®
+
+--------
+
+AMBERSQUID Cryptojacking Operation: Unusual AWS Services Under Attack
+Breaches and Incidents  September 21, 2023  Cyware Alerts - Hacker News
+AMBERSQUID Cryptojacking Operation: Unusual AWS Services Under Attack
+Threat Intelligence Management Series
+
+
+
+
+A new cryptojacking operation has been found targeting lesser-known AWS offerings such as AWS Amplify, AWS Fargate, and Amazon SageMaker to secretly mine cryptocurrency. Named AMBERSQUID, the campaign manages to exploit these cloud services without triggering AWS's usual resource approval process. The services are referred to as uncommon since they are overlooked from a security perspective.
+
+Diving into details
+Sysdig revealed that it came across this campaign by examining 1.7 million images on Docker Hub.
+It's worth noting that the first account was established in May 2022, and its development persisted until August of the same year.
+Subsequently, the attackers continued to upload cryptocurrency mining images using different accounts until March 2023, at which point they set up a GitHub account.
+To make their operation less conspicuous, they refrained from creating their own repositories initially. Instead, they downloaded cryptocurrency miners from well-known GitHub repositories and incorporated them into the layers of their Docker images.
+Their repositories currently lack any source code, but they offer the miners as downloadable archives through releases. These binaries are usually labeled as "test," compressed using UPX, and intentionally altered to make them challenging to unpack.
+
+The attack has been moderately attributed to attackers from Indonesia due to the presence of the Indonesian language in scripts and usernames.
+
+Why this matters
+As per researchers, if AMBERSQUID were to expand its scope to target all AWS regions, it could potentially lead to daily losses exceeding $10,000. 
+Additionally, upon scrutinizing the wallet addresses employed, it becomes evident that the attackers have accumulated over $18,300 in earnings thus far.
+Focusing on numerous services also presents added complexities, such as handling incident response. This is because it necessitates the identification and termination of all cryptocurrency miners within each compromised service.
+
+The bottom line
+The emergence of the AMBERSQUID cryptojacking operation, with its focus on relatively obscure AWS services, underscores the evolving landscape of cyber threats. These less-recognized AWS offerings, often overlooked from a security standpoint, have become prime targets for cryptocurrency mining exploitation. 
+
+To counter such threats, organizations must intensify vigilance, deploy robust monitoring systems, and enforce strict access controls. Regular audits of Docker images and repositories can help identify and thwart these covert operations.
