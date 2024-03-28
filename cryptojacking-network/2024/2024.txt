@@ -1,0 +1,189 @@
+Research by Amit Serper A few days ago the Nocturnus team investigated a new outbreak of Wannamine. Wannamine is an attack based on the EternalBlue exploits that were leaked from the NSA last year. You probably remember those exploits since they were used in last year’s WannaCry and NotPetya attacks. Learn about our most recent cutting-edge research:
+
+Wannamine penetrates computer systems through an unpatched SMB service and gains code execution with high privileges to then propagate across the network, gaining persistence and arbitrary code execution abilities on as many machines possible. First off, WannaMine isn’t a new attack. Other researchers have written about it and tech reporters have news articles have covered it. And that’s part of the problem (and why I’m publishing this research): the EternalBlue exploits are well known. And how to prevent attacks that use these exploits is also well known: apply a patch that Microsoft issued in March 2017. Yet companies are still facing threats that use the EternalBlue exploits. And until organizations patch and update their computers, they’ll continue to see attackers use these exploits for a simple reason: they lead to successful campaigns. Part of giving the defenders an advantage means making the attacker’s job more difficult by taking steps to boost an organization’s security. Patching vulnerabilities, especially the ones associated with EternalBlue, falls into this category. Now that I’ve made the case for patching, let’s look into the technical details of this latest Wannamine outbreak. The initial attack vector was exploitation of EternalBlue via an unpatched SMB server, like we saw with the WannaCry attack last May. Once code execution was gained, a PowerShell instance was spawned:
+
+Notice the Get-WmiObject cmdlet: The attackers are using WMI to enumerate the bitness of the victim machine - 32bit or 64bit. Once the bitness is enumerated, the correct payload will be downloaded and executed - in3.ps1 for 32 bit machines and in6.ps1 for 64bit machines. The downloaded payload is a very large text file. Most of it is base64 encoded along with some other text encoding and obfuscation tricks. In fact, the downloaded payload is so large (thanks to all of the obfuscation) that it makes most of the text editors hang and it’s quite impossible to load the entire base64’d string into an interactive ipython session. Once deobfuscated we can see more PowerShell code. Reading through the PowerShell code, it is very easy to understand its purpose: WannaMine uses WMI and PowerShell extensively to move laterally across a network. In addition to the PowerShell code, which is written in plain ASCII strings, there are also other unidentified strings and some binary blobs inside that huge heap of text (since I simply de-base64’d everything in that file). That binary blob, along with some more obfuscated text, is actually more code and a command to run the .NET compiler in order to compile a .NET DLL file. Important note: the DLL will be compiled to a different, random, file name each time.
+
+When we load that DLL into a .NET disassembler, we can clearly see that this is the PingCastle scanner, which was also mentioned in past reports about WannaMine. PingCastle’s job is to map the network and find the shortest path to the next exploitable machine by grabbing SMB information through the response packets sent by the SMB servers. While PingCastle is running, there are other parts from the main PowerShell script still in motion, including a PowerShell implementation of Mimikatz. The interesting thing is that this made me realize that most of the code in that PowerShell script was copied verbatim from various GitHub repositories. For example, the PowerShell Mimikatz implementation is straight from the invoke-mimikatz repository: PowerShell Mimikatz code from the dropped PowerShell script PowerShell Mimikatz code from the original GitHub repository PowerShell Mimikatz code from the dropped PowerShell script PowerShell Mimikatz code from the original GitHub repository The PowerShell script will also change the power management settings on the infected machine just before the miners are dropped to prevent the machine from going to sleep and maximize mining power availability:
+
+After the power settings on the machine was reconfigured, we started seeing hundreds of powershell.exe processes using a lot of CPU cycles and connecting to mining pool servers:
+
+That tells us that the cryptominers are actually running within PowerShell. However, when looking at the command line in these PowerShell executions, we don’t really see anything indicative of that behavior.
+
+"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoP -NonI -W Hidden "$mon = ([WmiClass] 'root\default:systemcore_Updater').Properties['mon'].Value;$funs = ([WmiClass] 'root\default:systemcore_Updater').Properties['funs'].Value ;iex ([System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($funs)));Invoke-Command -ScriptBlock $RemoteScriptBlock -ArgumentList @($mon, $mon, 'Void', 0, '', '')"
+
+When examining the command line, we can see that a WMI class, root\default:systemcore_Updater, is being accessed. This class holds the version of the currently installed version of the Wannamine malware. As for persistence, we can see that the malware installed a WMI filter, consumer and binder to gain persistent execution through WMI intrinsic events.
+
+Querying for WMI persistent objects across the entire organization When looking at WMI persistent objects across the entire organization, we can see that many machines have a WMI autorun associated with them. When we look at the consumer action (which defines which action to take once the intrinsic WMI event is consumed and handled) we  see, yet again, a blob of base64 encoded data. When decoded, we get about 120 lines of PowerShell code. Here are some of its highlights:
+
+This block extracts the functions from the root\default:Office_Updater WMI class in their base64 and then decodes them. Once decoded, the script will execute those commands by invoking them (iex $defun). The script then looks for other FilterToConsumerBinders and removes them.
+
+Important note: The script will then try to list all the processes that are connecting to IP address ports 3333, 5555 and 7777 and, if there are any active processes, the script will terminate them. This Wannamine variant connects to mining pools on port 14444 while other variants of this attack are connecting to mining pools on more standardized ports like 3333, 5555 and 7777. If any other processes on this machine are connected to mining pools on the standard ports, they will be terminated. Once that process is finished, it’s time to extract more values from the data that is stored within the WMI classes:
+
+The long (and truncated since it’s too big to fit in that screenshot) command will execute the cryptominer by invoking all of the commands that are stored in the $funs variable. Then, additional functionality will be extracted from other values in the Office_Updater class. These are the most notable variables:
+
+$mimi = PowerShell Mimikatz
+
+$NTLM  = Extracted NTLM hashes for lateral movement
+
+$scba = Scheduled task information for persistence
+
+$i17 = A list of IP addresses to be targeted. The IP addresses in $i17 are vulnerable to EternalBlue as gathered by the PingCastle scanner:
+
+As I mentioned earlier, Wannamine isn’t a new attack. It leverages the EternalBlue vulnerabilities that were used to wreak havoc around the world almost a year and a half ago. But more than a year later, we’re still seeing organizations severely impacted by attacks based on these exploits. There’s no reason for security analysts to still be handling incidents that involve attackers leveraging EternalBlue. And there’s no reason why these exploits should remain unpatched. Organizations need to install security patches and update machines. But that’s not all. Some of the IP addresses associated with Wannamine servers are still active although they were disclosed in security reports more than a year ago. We emailed the providers hosting those servers and haven’t heard back yet. In the meantime, we strongly recommend blocking these IPs: 118.184.48.95104.148.42.153107.179.67.243172.247.116.8172.247.116.8745.199.154.141 The code and mechanisms behind the Wannamine attack aren’t sophisticated: they are the product of hacking third party code (like the PingCastle scanner) and copying and pasting massive amounts of code, sometimes verbatim, from a Github repositories. Protect your team with a strong defense.
+
+
+
+
+
+
+
+=======================
+
+
+
+
+Criminals are using ransomware-like tactics and poisoned websites to get your employees’ computers to mine cryptocurrencies. Here’s what you can do to stop it.			
+
+
+
+Cryptojacking is the unauthorized use of someone else’s compute resources to mine cryptocurrency. Hackers seek to hijack any kind of systems they can take over—desktops, servers, cloud infrastructure and more—to illicitly mine for crypto coins.
+
+Regardless of the delivery mechanism, cryptojacking code typically works quietly in the background as unsuspecting victims use their systems normally. The only signs they might notice is slower performance, lags in execution, overheating, excessive power consumption, or abnormally high cloud computing bills.
+
+Coin mining is a legitimate process in the cryptocurrency world that releases new cryptocurrency into circulation. The process works by rewarding currency to the first miner who solves a complex computational problem. That problem completes blocks of verified transactions that are added to the cryptocurrency blockchain.
+
+“Miners are essentially getting paid for their work as auditors. They are doing the work of verifying the legitimacy of Bitcoin transactions,” detailed a recent Investopedia explainer on how Bitcoin mining works. “In addition to lining the pockets of miners and supporting the Bitcoin ecosystem, mining serves another vital purpose: It is the only way to release new cryptocurrency into circulation.”
+
+Earning cryptocurrency via coin mining typically takes a huge amount of processing power and energy to carry off. Additionally, the cryptocurrency ecosystem is designed in a way that makes mining harder and reduces the rewards for it over time and with more mining competition. This makes legitimate cryptocurrency coin mining an extremely costly affair, with expenses rising all the time.
+
+Cybercriminals slash mining overhead by simply stealing compute and energy resources. They use a range of hacking techniques to gain access to systems that will do the computational work illicitly and then have these hijacked systems send the results to a server controlled by the hacker.
+
+The attack methods are limited only by the cryptojackers’ creativity, but the following are some of the most common ones used today.
+
+In the past, cryptojacking was primarily an endpoint malware play, existing as yet another moneymaking objective for dropping malware on desktops and laptops. Traditional cryptojacking malware is delivered via typical routes like fileless malware, phishing schemes, and embedded malicious scripts on websites and in web apps.
+
+The most basic way cryptojacking attackers can steal resources is by sending endpoint users a legitimate-looking email that encourages them to click on a link that runs code to place a cryptomining script on their computer. It runs in the background and sends results back via a command and control (C2) infrastructure.
+
+Another method is to inject a script on a website or an ad that is delivered to multiple websites. Once victims visit the website or the infected ad pops up in their browsers, the script automatically executes. No code is stored on the victims’ computers.
+
+These avenues still remain a legitimate concern, though criminals have added significantly more sophisticated techniques to their cryptojacking playbooks as they seek to scale up profits, with some of these evolving methods described below.
+
+Attackers seek to amp up the profitability of cryptojacking by expanding their horizons to servers, network devices, and even IoT devices. Servers, for example, are a particularly juicy target since they usually are usually higher powered than a run-of-the-mill desktop. They’re also a prime hunting ground in 2022 as the bad guys scan for servers exposed to the public internet that contain vulnerabilities such as Log4J, exploiting the flaw and quietly loading cryptomining software on the system that’s connected to the hacker’s servers. Often attackers will use the initially compromised system to move their cryptojacking laterally into other network devices.
+
+“We’re seeing an uptick in cryptomining stemming from the Log4J vulnerability,” says Sally Vincent, senior threat research engineer for LogRhythm. “Hackers are breaking into networks and installing malware that uses storage to mine cryptos.”
+
+Cybercriminals are targeting the software supply chain by seeding open-source code repositories with malicious packages and libraries that contain cryptojacking scripts embedded within their code. With developers downloading these packages by the millions around the globe, these attacks can rapidly scale up cryptojacking infrastructure for the bad guys in two ways. The malicious packages can be used to target developer systems—and the networks and cloud resources they connect to—to use them directly as illicit cryptomining resources. Or they can leverage these attacks to poison the software that these developers are building with components that execute cryptomining scripts on the machines of an application’s end user.
+
+Many cryptojacking enterprises are taking advantage of the scalability of cloud resources by breaking into cloud infrastructure and tapping into an even broader collection of compute pools to power their mining activity. A study last fall by Google’s Cybersecurity Action Team reported that 86% of compromised cloud instances are used for cryptomining.
+
+“Today, attackers are targeting cloud services by any means to mine more and more cryptocurrency, as cloud services can allow them to run their calculations on a larger scale than just a single local machine, whether they’re taking over a user’s managed cloud environment or even abusing SaaS applications to execute their calculations,” Guy Arazi, senior security researcher for Palo Alto Networks, wrote in a blog post.
+
+One of the common methods to do this is by scanning for exposed container APIs or unsecured cloud storage buckets and using that access to start loading coin-mining software on impacted container instances or cloud servers. The attack is typically automated with scanning software that looks for servers accessible to the public internet with exposed APIs or unauthenticated access possible. Attackers generally use scripts to drop the miner payloads onto the initial system and to look for ways to propagate across connected cloud systems.
+
+“The profitability and ease of conducting cryptojacking at scale makes this type of attack low-hanging fruit,” said Matt Muir, security researcher for Cado Security, in a blog post explaining that cloud-based attacks are particularly lucrative. “This will likely continue for as long as users continue to expose services such as Docker and Redis to untrusted networks.”
+
+According to a report by ReasonLabs, in the last year 58.4% of all Trojans detected were cryptojacking coin miners. Meantime, another study by SonicWall found that 2021 was the worst year to date for cryptojacking attacks, with the category logging 97.1 million attacks over the course of the year. These numbers are so strong because cryptojacking is virtually minting money for cybercriminals.
+
+When a crook can mine for cryptocurrency on a seemingly limitless pool of free compute resources from victim machines, the upside for them is huge. Even with the precipitous drop in Bitcoin valuation this spring that brought it below the $30,000 level, cryptojackers’ illicit margins still make business sense as the value of what they mine far outstrips the costs of their criminal infrastructure.
+
+A honeypot from the security research team at Cado Labs discovered a multi-stage cryptojacking attack that targets exposed Docker Engine API endpoints and Redis servers, and can propogate in a worm-like fashion. The attack is perpetrated by the WatchDog attack group, which has been particularly active in late 2021 and 2022 with numerous cryptojacking campaigns.
+
+TeamTNT was one of the first hacking groups to shift cryptojacking focus heavily to cloud-oriented services. Researchers with TrendMicro in late 2021 reported that this group, along with rivals like the Kinsig gang, were conducting cryptojacking campaigns that installed miners in Alibaba Elastic Computing Service (ECS) instances and disabling security features to evade detection. 
+
+The Log4Shell vulnerability has been a boon to cryptojacking attackers in 2022. In one marked example, Sophos researchers found earlier this year that a ‘horde’ of attackers were targeting VMware Horizon servers to deliver a range of crypojacking payloads that included the z0Miner, the JavaX miner and at least two XMRig variants, Jin and Mimu cryptocurrency miner bots.
+
+The software supply chain security experts at Sonatype in fall of 2021 sounded the alarm on malicious cryptomining packages hiding in npm, the JavaScript package repository used by developers worldwide. At the time it found a trio of packages, at least one of which was impersonating a popular, legitimate library used by developers called “ua-parser-js,” which gets over 7 million weekly downloads and would be an ideal way to lure in developers to accidentally download a malicious bit of code and install it in their software.
+
+A few months after that report, researchers WhiteSource (now Mend) released an additional report that showed npm is swarming with malicious code—as many as 1,300 malicious packages that include cryptojacking and other nefarious behavior.
+
+Last summer Bitdefender discovered a Romanian threat group that was targeting Linux-based machines with SSH credentials to deploy Monero mining malware. The tools they used were distributed on an as-a-service model. This example was on the spear tip of what appears to be a growing trend of Linux system cryptomining attacks. A report earlier this year from VMware detailed a growing targeting of Linux-based multi-cloud environments, particularly using the XMRig mining software.
+
+“Many of the cryptomining samples from Linux-based systems have some relationship to the XMRig application,” explained the report, which showed that 89% of cryptomining attacks used XMRig-related libraries. “Therefore, when XMRig-specific libraries and modules in Linux binaries are identified, it is likely evidence of potential cryptomining behavior.
+
+CoinStop is another cryptojacking campaign recently discovered to be targeting Asian cloud service providers (CSPs). This one distinguished itself by its anti-forensics and evasion measures. These included timestomping to manipulate system timestamps, removal of system cryptographic policies, and the use of the he /dev/tcp device file to create a reverse shell session, explained Cado’s Muir in a report on the attack.
+
+Cryptojackers can sometimes go to great lengths to steal not only processing power but also energy and network resources from corporate infrastructure. Last year Darktrace analysts highlighted an anonymous example from one of its clients where it discovered a cryptomining farm in a warehouse that was disguised inside an unassuming set of cardboard boxes. Inside was a stealthy rig running multiple GPUs that were hooked into the company’s network power,
+
+As it has evolved into a multi-vector attack that spans across endpoint, server, and cloud resources, preventing cryptojacking takes an orchestrated and well-rounded defense strategy. The following steps can help prevent cryptojacking from running rampant on enterprise resources.
+
+Employ strong endpoint protection: The foundation of that is using endpoint protection and anti-malware that’s capable of detecting cryptominers, as well as keeping web filters up to date and managing browser extension to minimize risk of browser-based scripts from executing. Organizations should ideally look for endpoint protection platforms that can extend out to servers and beyond.
+
+Patch and harden servers (and everything else). Cryptojackers tend to look for the lowest hanging fruit that they can quietly harvest—that includes scanning for publicly exposed servers containing older vulnerabilities. Basic server hardening that includes patching, turning off unused services, and limiting external footprints can go a long way toward minimizing the risk of server-based attacks.
+
+Use software composition analysis. Software composition analysis (SCA) tools provide better visibility into what components are being used within software to prevent supply chain attacks that leverage coin mining scripts.
+
+Hunt down cloud misconfigurations. One of the most impactful ways organizations can stop cryptojacking in the cloud is by tightening cloud and container configurations. That means finding cloud services exposed to the public internet without proper authentication, rooting out exposed API servers, and eliminating credentials and other secrets stored in developer environments and hardcoded into applications.
+
+Cryptojacking is a classic low-and-slow cyberattack designed to leave minimal signs behind to avoid long-term detection. While endpoint protection platforms and endpoint detection and response technologies have come a long way in alerting to cryptojacking attacks, the bad guys are masters of evasion on this front and detecting illicit coin miners can still prove difficult, especially when only a few systems are compromised. The following are some additional methods for flagging signs of cryptojacking.
+
+Train your help desk to look for signs of cryptomining. Sometimes the first indication on user endpoints is a spike in help desk complaints about slow computer performance. That should raise a red flag to investigate further, as could devices over-heating or poor battery performance in mobile devices.
+
+Deploy a network monitoring solution. Network monitoring tools can offer a powerful tool in picking up on the kinds of web traffic and outbound C2 traffic that indicates cryptojacking activity, no matter the device it is coming from.
+
+“If you have good egress filtering on a server where you’re watching for outbound connection initiation, that can be good detection for [cryptomining malware],” ],” says Travis Farral, vice president and CISO at Archaea Energy. He warns, though, that cryptominer authors can write their malware to avoid that detection method.
+
+Use cloud monitoring and container runtime security. Evolving tools like cloud monitoring and container runtime security scanning can offer additional visibility into cloud environments that may be impacted by unauthorized cryptominers. Cloud providers are baking in this kind of visibility into their service, sometimes as add-ons. For instance, Google Cloud expanded its Security Command Center earlier this year to include what it calls its Virtual Machine Threat Detection (VMTD) to pick up on signs of cryptomining in the cloud, among other cloud threats.
+
+Engage in regular threat hunts. Since so many cryptojacking attacks are stealthy and leave few tracks, organizations may need to take more active measures like threat hunting to regularly seek out subtle signs of compromise and follow through with investigations.
+
+“Endpoint security and SOC teams should invest time into active exercises and threat hunts instead of waiting around for something potentially catastrophic to happen,” LogRhythm’s Vincent says.
+
+Monitor your websites for cryptomining code. Farral warns that cryptojackers are finding ways to place bits of Javascript code on web servers. “The server itself isn’t the target, but anyone visiting the website itself [risks infection],” he says. He recommends regularly monitoring for file changes on the web server or changes to the pages themselves.
+
+After illicit cryptomining activity has been detected, responding to a cryptojacking attack should follow standard cyber incident response steps that include containment, eradication, recovery, and lessons learned. Some tips for how to respond to a cryptojacking attack include:
+
+Kill web-delivered scripts. For in-browser JavaScript attacks, the solution is simple once cryptomining is detected: Kill the browser tab running the script. IT should note the website URL that’s the source of the script and update the company’s web filters to block it.
+
+Shut down compromised container instances. Immutable cloud infrastructure like container instances that are compromised with coin miners can also be handled simply, by shutting down infected container instances and starting fresh. However, organizations must dig into the root causes that led to the container compromise in the first place. This means looking for signs that the container dashboard and credentials have been compromised and examining connected cloud resources for signs of compromise. A key step is ensuring that the fresh new container image to replace the old one isn’t similarly configured.
+
+Reduce permissions and regenerate API keys. Eradicating and fully recovering from cloud-based cryptojacking will require organizations to reduce permissions to impacted cloud resources (and those connected to them) and regenerating API keys to prevent attackers from walking right back into the same cloud environment.
+
+Learn and adapt. Use the experience to better understand how the attacker was able to compromise your systems. Update your user, helpdesk, IT, and SOC analyst training so they are better able to identify cryptojacking attempts and respond accordingly.
+
+Editor’s note: This article, orginally published in February 2018, has been updated to include new research, best practices, and cryptojacking examples.
+
+An award-winning freelance writer, Ericka Chickowski specializes in telling stories about the intersection of information technology and business innovation.  She has focused on cybersecurity for over 15 years and keeps her finger on the pulse of the most relevant trends in cybersecurity.
+
+
+
+
+
+==================
+
+
+
+
+As commercial adoption of cloud technologies continues, cloud-focused malware campaigns have increased in sophistication and number – a collective effort to safeguard both large and small enterprises is critical, according to Cado Security.
+
+cloud focused malware campaigns
+
+Docker remains the most frequently targeted for initial access
+Security teams need to reassess their internal tools and approaches to ensure their ability to correctly identify, investigate, and respond to emerging cloud threats.
+
+Attackers are increasingly targeting services, such as Docker, Redis, Kubernetes, and Jupyter, that require expert technical knowledge to exploit, different from what’s required for attacking generic Linux servers.
+
+Although cloud-focused attackers aim to exploit various services typically deployed in cloud environments, Docker remains the most frequently targeted for initial access, with 90.65% of honeypot traffic when discounting SSH.
+
+Identified malware campaigns, such as P2Pinfect, had a wide geographical distribution with nodes belonging to providers in China, the US, and Germany, which shows that regardless of where your infrastructure is located, it is still susceptible to Linux and cloud-focused attacks.
+
+Attackers continue to exploit web-facing services in cloud environments
+While cryptojacking is a legitimate and significant threat, Cado Security Labs has started to see a diversification in objectives displayed by recent Linux and cloud malware campaigns.
+
+For example, with the discovery of new Linux variants of ransomware families, such as Abyss Locker, there is a worrying trend of ransomware on Linux and ESXi systems. Cloud and Linux infrastructure is now subject to a broader variety of attacks.
+
+Attackers continue to exploit web-facing services in cloud environments to help them gain access to cloud environments and invest significant time into hunting for misconfigured deployments of these services.
+
+Rust malware continues to increase as the language gains popularity in general software development and will also become increasingly popular in the malware community, with threat actors increasingly developing malicious payloads in Rust.
+
+“We are very excited to deliver our half-yearly cloud threat findings report, which provides a detailed overview of significant discoveries made by the Cado Security Labs team over the last six months,” said Chris Doman, CTO of Cado Security. “With this report, we aim to help security professionals better understand how attackers exploit cloud-based technologies and, in turn, enable them to build a more robust internal security program.”
+
+
+====================
+
+
+
+
+
+
+

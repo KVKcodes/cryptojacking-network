@@ -1,0 +1,1111 @@
+In cloud environments, cryptojacking – a type of cyberattack that uses computing power to mine cryptocurrency – takes the form of cloud compute resource abuse, which involves a threat actor compromising legitimate tenants. Cloud compute resource abuse could result in financial loss to targeted organizations due to the compute fees that can be incurred from the abuse. In attacks observed by Microsoft, targeted organizations incurred more than $300,000 in compute fees due to cryptojacking attacks.
+
+While there are fundamental differences in how cloud providers handle authentication, permissions, and resource creation, a cloud cryptojacking attack could unfold in any environment where a threat actor can compromise an identity and create compute, and the attack lifecycle is largely the same. Microsoft security experts have surfaced tell-tale deployment patterns to help defenders determine, identify, and mitigate cloud cryptojacking attacks.
+
+To perform cloud cryptojacking, threat actors must typically have access to compromised credentials obtained through various means, highlighting the need to implement common best practices like credential hygiene and cloud hardening. If the credentials do not have the threat actors’ desired permissions, privilege escalation techniques are used to obtain additional permissions. In some cases, threat actors hijack existing subscriptions to further obfuscate their operations.
+
+Once access to the tenant is gained, threat actors create large amounts of compute, preferring core types that allow them to mine more currency faster. Threat actors use these deployed resources to start mining cryptocurrency by installing cryptomining software in the newly created virtual machines (VMs) and joining them to mining pools.
+
+In this blog post, we present insights from our research on how attackers launch cryptojacking attacks in cloud environments. These insights deepen our understanding of these threats, which in turn inform the protections that we continuously build into our cloud security solutions. We share patterns that administrators and defenders can look out for to identify if a cryptojacking attack is occurring within their cloud environment. We also provide information on how Microsoft Defender for Cloud, Microsoft Defender for Cloud Apps, and other solutions can detect cryptocurrency mining threats and related malicious activity.
+
+While this blog covers mitigation and protections against cloud cryptojacking, in general, strengthening cloud security posture, protecting cloud workloads from threats, and better control of cloud app access can help organizations defend against a wide range of cloud-based threats and risks.
+
+Cryptocurrency mining in cloud environments
+In incident response investigations and proactive research in the past year, we observed threat actors abusing administrative features to deploy and manage cryptocurrency mining resources in compromised tenants. Many of these attacks take advantage of automation, which increases the potential threat to cloud environments.
+
+Cryptocurrency mining using central processing unit (CPU) or graphics processing unit (GPU) compute in cloud environments is not financially viable if one is paying for the compute used. In order to profit, threat actors use malicious methods to avoid paying for the resources, such as abusing free trials or compromising legitimate tenants to conduct cryptojacking attacks.
+
+Unlike free trial abuse, which the cloud provider may be able to detect, cryptojacking in compromised tenants is more challenging to identify since it involves the threat actor having access to a legitimate user account. This complex method impacts the user more directly, as it allows the threat actor to make more intrusive changes in the target environment:
+
+Utilize available compute quota from compromised tenants, and provision significantly more compute and other additional resources.
+Mask resource provisioning activity as legitimate when operating within a compromised tenant.
+Use access to the compromised tenant to do further lateral movement, achieve persistence, and conduct information theft.
+Successful cloud cryptojacking attacks could result in significant unexpected charges to the compromised tenant and depletion of resources that the tenant might need for business continuity, potentially resulting in service interruption, highlighting the need to prevent, detect and mitigate cloud cryptojacking attacks.
+
+Attack lifecycle
+Cryptojacking requires the threat actor to reach a certain level of access to the cloud environment, which we explain in more detail in the next sections. The diagram below shows the stages of a typical cloud cryptojacking attack.
+
+Graphical diagram of a cryptojacking attack lifecycle. Presents the steps taken by threat actor from accessing the tenant to mining cryptocurrency. 
+Figure 1. Diagram of cryptojacking attack on a compromised cloud tenant
+In the above example, the attacker generally keeps their operational infrastructure separate from the compromised infrastructure used for mining.
+
+Initial access: Compromised credentials
+To perform this attack, the threat actor must have access to credentials that can be used to access the tenant. These credentials need to have the virtual machine contributor role, or provide a path to a user account that does. Threat actors abusing tenants in this way utilize multiple methods to gain account credentials such as phishing, using leaked credentials, and on-premises device compromise. Microsoft Incident Response investigations found that in nearly all cases observed, the accounts did not have multi-factor authentication (MFA) enabled, and no evidence of password spray or brute force was present, suggesting leaked credentials might be the most common vector.
+
+After gaining access, some threat actors use attacker-controlled virtual machines within legitimate tenants as their operational infrastructure. By using living-off-the-land techniques, threat actors can operate without any infrastructure external to the cloud environment. This attack cycle is shown in the diagram below.
+
+Graphical diagram of the attack cycle where the threat actor gains access to target tenants. 
+Figure 2. Initial access attack cycle
+In the above example, the attacker generally keeps their operational infrastructure separate from the compromised infrastructure used for mining.
+
+Privilege escalation: Elevating access
+In some observed cases, threat actors compromise the global administrator account. By design, global administrator accounts might not have access to all subscriptions and management groups within the directory; the elevate access option needs to be elevated for the account to have permissions over all resources. Access to global administrator accounts must therefore be adequately secured to prevent threat actors from elevating their access or granting roles that allow the creation of compute resources.
+
+Defense evasion: Subscription hijacking
+After gaining access to the tenant and performing reconnaissance to determine available permissions, the attacker may proceed to hijack the subscription. Subscription hijacking has been covered previously in the blog entry Hunt for compromised Azure subscriptions using Microsoft Defender for Cloud Apps.
+
+Subscription hijacking is an evasion technique that allows the threat actor to hide some of their activities from the tenant administrator and security teams. Migrating a subscription directory requires the threat actor to have sufficient privileges in the target subscription. In cases observed by Microsoft, the destination tenant may be attacker-controlled or another affected tenant that the threat actor has access to.
+
+Additionally, subscription hijacking is disruptive forensically. Microsoft Incident Response has observed instances where a threat actor compromised accounts in customer environments that were over-privileged. Abusing over-privileged accounts allowed the threat actor to migrate the subscription to a separate tenant (often attacker-controlled) to spin up additional resources. While activity logs at the subscription level remain with the subscription, anything recorded at the tenant role-based access control (RBAC) level is recorded in the new tenant, making forensic analysis, understanding the full timeline, or incident response by or for the customer, more challenging.
+
+Impact: Increasing core quotas
+Once a threat actor has access to a tenant, they can either create compute using existing core quota, or they may choose to increase core quotas within the tenant. Increasing core quotas is potentially risky for the actor as quota increases undergo review. Some quotas can’t be immediately adjusted and require a support ticket to increase.
+
+Threat actors without permission to increase quotas use whatever is available. This often leads to them exhausting available core counts across multiple regions. Quota increases have occurred up to a month before resources are deployed by the threat actor.
+
+GPU compute offerings are often targeted by threat actors. GPU compute provides access to high performance NVIDIA and AMD GPU cores, allowing cryptocurrency mining magnitudes more effective than any CPU compute offering. A complete overview of GPU compute types can be found in GPU optimized virtual machine sizes.
+
+The NVIDIA T4, V100, and A100 GPU compute options are most abused by threat actors. At time of writing, the NVIDIA A100 is the best mining card available that is not a dedicated application-specific integrated circuit (ASIC). When comparing NVIDIA GPU performance for cryptomining, the number of Compute Unified Device Architecture (CUDA) cores can be used as a rough representation of the card’s performance. CUDA is designed specifically for high performance parallel computing, which allows more computations to take place at once. For NVIDIA GPUs, more CUDA cores generally means more mining potential. The table below shows the comparative hash rate for the top three most abused GPU compute cards within cloud environments based on mining Ethereum Proof of Work (ETHW).
+
+Azure VM versions	GPU	CUDA cores	ETHW*
+NC T4 v3	NVIDIA T4	2,560	25.1MH/s
+NCv3	NVIDIA V100	5,120	89.5MH/s
+ND A100 v4	NVIDIA A100 (40GB)	6,192	175MH/s
+* Mining rates based on the Ethereum Proof of Work complexity in February 2023
+As the table above shows, threat actors who can provision NVIDIA GPU cores can mine a meaningful amount of currency in a relatively short period of time. In attacks observed by Microsoft, cryptojacking activities were seen to incur compute fees more than $300,000, illustrating how unprofitable mining is within cloud environments without committing resource theft.
+
+Impact: Deploying compute
+There are several ways to deploy compute, and threat actors have adapted to abusing features to speed up deployment. As resource hijacking is an attack of scale, the threat actor needs a way to rapidly spin up and manage multiple devices. In observed cases, threat actors have employed VM scale sets, Azure Machine Learning compute instances, Azure Batch, and Azure Container Instances. Each of these systems allows compute to be deployed quickly and centrally managed.
+
+Malicious provisioning behavior of compute using the above methods generally does not match existing compute provisioning patterns within the tenant. The graph below shows an attacker deploying NVIDIA compute cores within a target environment using VM scale sets. The Y axis shows the capacity of the VM whilst the X axis represents time, this activity spans a three-hour period. Each color represents a single region, with the attacker iterating the various regions to create compute.
+
+A line graph presenting threat actors' compute deployment pattern. The graph indicates that actors create identical numbers of batch accounts for multiple hijacked subscriptions.  
+Figure 3. Attacker compute deployment pattern
+In the graph above, the actor followed a predictable and anomalous deployment pattern across several hijacked subscriptions. Microsoft Threat Intelligence analysis shows that this deployment pattern is unique to a specific threat actor. While this specific pattern may change, the automated nature of malicious compute deployments means that an unusual pattern almost always emerges.
+
+Some staggering of deployment is used, but the threat actor ultimately needs to provision compute very quickly to make the attack profitable. This time restriction means that patterns in provisioning generally emerge over relatively short periods of time. In the above case, the entire provisioning stage of the attack took place over a three-hour period.
+
+In addition to the pattern of deployment, in this case, the following additional anomalies were also observed:
+
+The user accounts used to provision compute had never provisioned compute before.
+The compromised user provisioned GPU compute, when no GPU compute had been provisioned in this environment before.
+Compute was deployed to regions anomalous for the environment.
+Other cases observed by Microsoft showed the following deployment anomalies:
+
+A user with a recent Azure AD anomaly creating large volumes of compute.
+A user suddenly causing multiple deployment failures spanning multiple core types due to a core quota unavailability.
+Other than VM scale set deployment patterns, the same anomalous patterns can be identified within other automated deployment services such as Azure ML compute instances, Azure Batch, and Azure Container Instances.
+
+Impact: Mining cryptocurrency
+Once compute resources are deployed, the actor may need to install GPU drivers to take full advantage of the graphics card, especially on N-series VMs. Actors have been observed abusing Azure Virtual Machine extensions such as an NVIDIA GPU Driver Extension for Windows or Linux, or an AMD GPU Driver Extension for Windows, to facilitate driver installation. These extensions allow for the mass-deployment of drivers, reducing the threat actors’ setup time before mining.
+
+The following anomalies have been observed when actors use these extensions:
+
+Sudden or unusual high-volume provisioning of GPU drivers using a GPU Driver Extension.
+A user account suddenly deploying GPU extensions, especially where that user account has no history of deploying VM extensions.
+With compute prepared, the threat actor can begin mining cryptocurrency by deploying mining software to the newly created VMs. The installed mining software joins the VM to a mining pool, which allows the threat actor to pool their stolen processing power from multiple compromised tenants.
+
+Data from Microsoft Defender for Cloud shows some of the most recent pools in use by threat actors using already-compromised Azure tenants. Below is the list of the top 10 mining domains observed being used:
+
+nanopool[.]org
+nicehash[.]com
+supportxmr[.]com
+hashvault[.]pro
+zpool[.]ca
+herominers[.]com
+f2pool[.]com
+minexmr[.]com
+moneroocean[.]stream
+miner[.]rocks
+Seeing connections to any mining pool from a VM within an environment is a strong indication of compromise. Microsoft Defender for Cloud has multiple detections for this behavior.
+
+Recommendations to identify and mitigate cryptojacking attacks
+Security teams should monitor and regularly review alerts specific to these scenarios. In environments where the creation of compute or increases in quota are uncommon, additional alerts should be built to monitor associated operations within your SIEM tool like Microsoft Sentinel. These are highly environmentally specific.
+
+While every situation is unique to the customer and their environment, Microsoft Incident Response has identified several recommendations that are broadly applicable to help identify and mitigate cryptojacking attacks, alongside specific product detections. These recommendations are based on observations from responding to multiple resource abuse engagements.
+
+Separation of privileged roles: Keep administrator and normal user accounts separate. Non-administrator users who require privileged roles in the environment for specific functions should utilize Privileged Identity Management to access the roles on an as-needed basis in a way that can be audited and tracked, or also have separate accounts created. In most resource abuse cases Microsoft Incident Response has investigated, the initially compromised user is over privileged in some way. Thus, it is good practice to limit the number of accounts that have the virtual machine contributor role. In addition, accounts with this role should be protected by MFA and Conditional Access where possible. Also, since a global admin must enable the elevate access option to have permissions over all Azure resources, it should be considered a very sensitive activity that should be monitored and reviewed.
+Multifactor authentication: Tenant administrators should ensure that MFA is in use comprehensively across all accounts. This is especially important if the account has virtual machine contributor privileges. Users should also be discouraged from reusing passwords across services. Microsoft Defender for Cloud provides a range of recommendations to secure cloud environments. A full list can be found in Security recommendations – a reference guide.
+Risk-based sign-in behaviors and conditional access policies: In cases investigated, attackers who have signed in using compromised credentials have triggered high Azure Active Directory (Azure AD) risk scores. Monitoring risky user alerts and tuning detections that take advantage of this security information help prevent these attacks. In addition to analyzing Azure AD risk scores, correlating risky Azure AD behavior with follow-on activity can help produce additional true positive detections. Risk-based conditional access policies can be designed to require multifactor reauthentication, enforce device compliance, force the user to update their password, or outright block the authentication. In many cases, policies such as these can be disruptive enough to provide security teams with enough time and signal to respond or alert the legitimate user to an issue before the resource abuse begins.
+Standard login anomaly detections were also found applicable in cases investigated by Microsoft Incident Response, with threat actors commonly using proxy services, signing in from anomalous locations, and accessing accounts using anomalous user agents. One group of activity tracked by Microsoft Threat Intelligence used Python requests and the default user agent (python-requests/2.26.0) for all operations.
+Microsoft 365 Defender uses detections such as Access elevation by risky user and Risky user performed suspicious Azure activities, which correlate users marked as risky by Azure AD with anomalous actions to raise the severity of alerts in Microsoft 365 Defender.
+Lastly, authentication to a tenant from an IP that is outside of that tenant should be  anomalous. Defenders can identify which IP addresses are allocated within a tenant using the az vm list-ip-addresses command.
+Limit unused quota and monitor for unexpected quota increases: Looking for multiple unexpected quota increases occurring in a short period of time, quota increases across multiple regions, or quota increases within regions that the environment does not normally use might allow for early detection of a resource abuse attack. Quota increases are one of the first signals Microsoft Incident Response looks for when investigating suspected resource abuse attack. Quota increase detections can potentially be refined by looking for increases to commonly abused core types, especially if their usage is otherwise rare in an environment.
+Monitor for external Azure IP addresses authenticated with your tenant: Threat actors performing these attacks also use Azure compute resources to conduct their operations. Monitoring for successful sign in activity from Azure IP addresses that are not owned by your tenant is often a strong indicator of suspicious activity. Seeing multiple authentication attempts from Azure IP addresses using the same browser user agent is another strong indicator of potential password guessing.
+Detection details
+Microsoft 365 Defender
+Microsoft 365 Defender is becoming Microsoft Defender XDR. Learn more.
+
+Microsoft 365 Defender uses its cross-workloads detection capabilities to provide enhanced protection against cryptocurrency mining attacks. Microsoft 365 Defender customers who have enabled their Azure connector in Microsoft Defender for Cloud Applications can benefit from the following alerts:
+
+Access elevation by risky user
+Suspicious Azure activities related to possible cryptocurrency mining
+Mass provisioning of GPU virtual machines for possible cryptocurrency mining
+Suspicious creation of multiple Azure ML clusters and workspaces
+Suspicious role assignment in Azure subscription
+VM quota modified after risky user signed in
+Microsoft Defender for Cloud Applications
+The following Microsoft Defender for Cloud Application alerts indicate threat activity related to the attack discussed in this post:
+
+Multiple delete VM activities
+Multiple VM creation activities
+Microsoft Defender for Cloud
+Microsoft Defender for Cloud detects threat components associated with the activities outlined in this article with the following alerts:
+
+Azure Resource Manager operation from suspicious proxy IP address
+Crypto-mining activity
+Digital currency mining activity (Preview)
+Fileless attack toolkit detected 
+Possible Cryptocoinminer download detected 
+Process associated with digital currency mining detected 
+Potential crypto coin miner started 
+Suspicious Azure role assignment detected (Preview)
+Suspicious creation of compute resources detected (Preview)
+Suspicious installation of a GPU extension was detected in your virtual machine (Preview)
+Suspicious invocation of a high-risk ‘Execution’ operation by a service principal detected (Preview)
+Suspicious invocation of a high-risk ‘Execution’ operation detected (Preview)
+Suspicious invocation of a high-risk ‘Impact’ operation by a service principal detected (Preview)
+Suspicious invocation of a high-risk ‘Impact’ operation detected (Preview)
+Suspicious subscription transfer to external tenant was detected (Preview)
+Microsoft Defender for Endpoint
+The following Microsoft Defender for Endpoint alert can indicate associated threat activity:
+
+Possible cryptocurrency miner
+Hunting queries
+Microsoft Sentinel
+Microsoft Sentinel customers can use the TI Mapping analytics (a series of analytics all prefixed with ‘TI map’) to automatically match the malicious domain indicators mentioned in this blog post with data in their workspace. If the TI Map analytics are not currently deployed, customers can install the Threat Intelligence solution from the Microsoft Sentinel Content Hub to have the analytics rule deployed in their Sentinel workspace. More details on the Content Hub can be found here:
+
+In addition, Microsoft Sentinel customers can leverage the following content to hunt for and detect related activity in their environments:
+
+Crypto currency miners
+Suspicious cryptocurrency mining related threat activity detected
+Detecting Anomaly Sign-In Event
+Administrator Authenticating to Another Azure AD Tenant
+Creation of an anomalous number of resources
+Appendix
+Top 10 mining domains used by threat actors:
+
+nanopool[.]org
+nicehash[.]com
+supportxmr[.]com
+hashvault[.]pro
+zpool[.]ca
+herominers[.]com
+f2pool[.]com
+minexmr[.]com
+moneroocean[.]stream
+miner[.]rocks
+------------------------------------------------------------------------------------------------------------------------------------------------
+Best practices for protecting against cryptocurrency mining attacks 
+
+bookmark_border
+Last reviewed 2023-10-20 UTC
+Cryptocurrency mining (also known as bitcoin mining) is the process used to create new cryptocoins and verify transactions. Crytocurrency mining attacks occurs when attackers who gain access to your environment might also exploit your resources to run their own mining operations at your expense.
+
+According to the November 2021 Threat Horizons report, cryptocurrency mining attacks are the most common way that attackers exploit your computing resources after they compromise your Google Cloud environment. The report also says that attackers typically download cryptocurrency mining software to your resources within 22 seconds of compromising your system. Cryptocurrency mining can rapidly increase costs, and a cryptocurrency mining attack can cause a much larger bill than you expected. Because costs can add quickly, you must put in place protective, detective, and mitigation measures to protect your organization.
+
+This document is intended for security architects and administrators. It describes the best practices that you can take to help protect your Google Cloud resources from cryptocurrency mining attacks and to help mitigate the impact should an attack occur.
+
+Identify your threat vectors
+To determine your organization's exposure to cryptocurrency mining attacks, you must identify the threat vectors that apply to your organization.
+
+The November 2021 Threat Horizons report indicates that most attackers exploit vulnerabilities such as the following:
+
+Weak password or no password for user accounts
+Weak or no authentication for Google Cloud APIs
+Vulnerabilities in third-party software
+Misconfigurations in your Google Cloud environment or in third-party applications that you're running on Google Cloud
+Leaked credentials, such as service account keys published in public GitHub repositories
+In addition, you can subscribe to and review the following documents for a list of threat vectors:
+
+Your government's cybersecurity advisories
+Google Cloud security bulletins
+Compute Engine security bulletins
+The security bulletins for the third-party applications that you are running in Google Cloud
+Important Google Cloud notifications
+After you identify the threat vectors that apply to you, you can use the remaining best practices in this document to help address them.
+
+Protect accounts and account credentials
+Attackers can exploit unguarded or mismanaged accounts to gain access to your Compute Engine resources. Google Cloud includes different options that you can configure to manage accounts and groups.
+
+Restrict access to your cloud environment
+The following table describes the organizational policies that you can use to define who can access your cloud environment.
+
+Organization policy constraint	Description
+Domain restricted sharing	Specify which customer IDs for Cloud Identity or Google Workspace are valid.
+Allowed AWS accounts that can be configured for workload identity federation in Cloud IAM	In a hybrid cloud environment, define which AWS accounts can use workload identify federation.
+Allowed external identity providers for workloads	In a hybrid cloud environment, define which identity providers your workloads can use.
+Set up MFA or 2FA
+Cloud Identity supports multi-factor authentication (MFA) using various methods. Configure MFA, particularly for your privileged accounts. For more information, see Enforce uniform MFA to company-owned resources.
+
+To help prevent phishing attacks that can lead to cryptocurrency mining attacks, use Titan Security Keys for two-factor authentication (2FA).
+
+Configure least privilege
+Least privilege ensures that users and services only have the access that they require to perform their specific tasks. Least privilege slows down the ability of attacks to spread throughout an organization because an attacker can't easily escalate their privileges.
+
+To meet your organization's needs, use the fine-grained policies, roles, and permissions in Identity and Access Management (IAM). In addition, analyze your permissions regularly using role recommender and Policy Analyzer. Role recommender uses machine learning to analyze your settings and provide recommendations to help ensure that your role settings adhere to the principle of least privilege. Policy Analyzer lets you see which accounts have access to your cloud resources.
+
+Monitor accounts
+If you use groups to assign IAM policies, monitor the group logs to ensure that non-corporate accounts aren't added. In addition, restrict the identities, based on Cloud Identity or Google Workspace domains, that can access your resources. For more information, see Restricting identities by domain.
+
+Ensure that your offboarding procedures include processes to deactivate accounts and reset permissions when employees leave your organization or change roles. For more information, see Revoking Access to Google Cloud.
+
+To audit your users and groups, see Audit logs for Google Workspace.
+
+Reduce internet exposure to your Compute Engine and GKE resources
+Reducing internet exposure means that your attackers have fewer opportunities to find and exploit vulnerabilities. This section describes the best practices that help protect your Compute Engine VMs and your Google Kubernetes Engine (GKE) clusters from internet exposure.
+
+Restrict external traffic
+Do not assign external IP addresses to your VMs. You can use the Disable VPC External IPv6 usage organization policy constraint to deny external IP addresses to all VMs. To view which VMs have publicly accessible IP addresses, see Locating IP addresses for an instance. If your architecture requires external IP addresses for your VMs, use the Define allowed external IPs for VM instances organization policy, which lets you define a list of instance names that are permitted to have external IP addresses.
+
+Restrict GKE nodes to internal IP addresses only. For more information, see Creating a private cluster.
+
+Restrict inbound (ingress) and outbound (egress) traffic to the internet for all resources in your projects. For more information, see VPC firewall rules and Hierarchical firewall policies.
+
+For more information about restricting external traffic, such as configuring Cloud NAT to allow outgoing communications for VMs without external IP address or using a proxy load balancer for incoming communications, see Securely connecting to VM instances.
+
+Use service perimeters
+Create a service perimeter for your Compute Engine and GKE resources using VPC Service Controls. VPC Service Controls lets you control communications to your Compute Engine resources from outside of the perimeter. Service perimeters allow free communication within the perimeter, block data exfiltration, and block service communication from outside the perimeter. Use context-aware access attributes like IP addresses and users' identities to further control access to Google Cloud services from the internet.
+
+Set up zero trust security
+Set up zero trust security with BeyondCorp Enterprise. BeyondCorp Enterprise provides threat and data protection and access controls. If your workloads are located both on-premises and in Google Cloud, configure Identity-Aware Proxy (IAP). Configure TCP forwarding to control who can access administrative services like SSH and RDP on your Google Cloud resources from the public internet. TCP forwarding prevents these services from being openly exposed to the internet.
+
+Secure your Compute Engine and GKE resources
+Cryptocurrency mining requires access to your Compute Engine and GKE resources. This section describes the best practices that will help you secure your Compute Engine and GKE resources.
+
+Secure your VM images
+Use hardened and curated VM images by configuring Shielded VM. Shielded VM is designed to prevent malicious code such as kernel-level malware or rootkits from being loaded during the boot cycle. Shielded VM provides boot security, monitors integrity, and uses the Virtual Trusted Platform Module (vTPM).
+
+To restrict which images can be deployed, you can implement trusted image policies. The Define trusted image projects organization policy defines which projects can store images and persistent disks. Ensure that only trusted and maintained images exist in those projects.
+
+In GKE, ensure that your containers use base images, which are regularly updated with security patches. Also, consider distroless container images that include only your application and its runtime dependencies.
+
+Secure SSH access to VMs
+Configure OS Login to manage SSH access to the VMs running in Compute Engine. OS Login simplifies SSH access management by linking your administrator's Linux user account to their Google identity. OS Login works with IAM so that you can define the privileges that administrators have.
+
+For more information, see Protect VMs and containers.
+
+Restrict service accounts
+A service account is a Google Cloud account that workloads use to call the Google API of a service.
+
+Do not permit Google Cloud to assign default service account roles to resources when they are created. For more information, see Restricting service account usage.
+
+If your applications are running outside of Google Cloud, and yet require access to Google Cloud resources, do not use service account keys. Instead, implement workload identity federation to manage external identities and the permissions that you associate with them. For GKE, you can implement workload identities. For more information, see Choose the right authentication method for your use case.
+
+For more best practices that help secure service accounts, see Best practices for working with service accounts.
+
+Monitor usage of service accounts and service account keys
+Set up monitoring so that you can track how service accounts and service account keys are being used in your organization. To get visibility into notable usage patterns, use service account insights. For example, you can use service account insights to track how permissions are used in your projects and to identify unused service accounts. To see when your service accounts and keys were last used to call a Google API for authentication activities, view recent usage for service accounts and service account keys.
+
+Monitor and patch VMs and containers
+To start a cryptocurrency mining attack, attackers often exploit misconfigurations and software vulnerabilities to gain access to Compute Engine and GKE resources.
+
+To obtain insight into the vulnerabilities and misconfigurations that apply to your environment, use Security Health Analytics to scan your resources. In particular, if you use Security Command Center Premium, review any Compute Engine instance findings and Container findings and set up processes to resolve them quickly.
+
+Use Artifact Analysis to check for vulnerabilities in the container images that you store in Artifact Registry or Container Registry.
+
+Ensure that your organization can deploy patches as soon as they are available. You can use OS patch management for Compute Engine. Google automatically patches vulnerabilities in GKE. For more information, see Keep your images and clusters up to date.
+
+Protect your applications using a WAF
+Attackers can try to access your network by finding Layer 7 vulnerabilities within your deployed applications. To help mitigate against these attacks, configure Google Cloud Armor, which is a web application firewall (WAF) that uses Layer 7 filtering and security policies. Google Cloud Armor provides denial of service (DoS) and WAF protection for applications and services hosted on Google Cloud, on your premises, or on other clouds.
+
+Google Cloud Armor includes a WAF rule to help address Apache Log4j vulnerabilities. Attackers can use Log4j vulnerabilities to introduce malware that can perform unauthorized cryptocurrency mining. For more information, see Google Cloud Armor WAF rule to help address Apache Log4j vulnerability.
+
+Secure your supply chain
+Continuous integration and continuous delivery (CI/CD) provides a mechanism for getting your latest functionality to your customers quickly. To help prevent cryptocurrency mining attacks against your pipeline, perform code analysis and monitor your pipeline for malicious attacks.
+
+Implement Binary Authorization to ensure that all images are signed by trusted authorities during the development process and then enforce signature validation when you deploy the images.
+
+Move security checks to as early in the CI/CD process as possible (sometimes referred to as shifting left). For more information, see Shifting left on security: Securing software supply chains. For information on setting up a secure supply chain with GKE, see Software supply chain security.
+
+Manage secrets and keys
+A key attack vector for unauthorized cryptocurrency mining attacks is insecure or leaked secrets. This section describes the best practices that you can use to help protect your secrets and encryption keys.
+
+Rotate encryption keys regularly
+Ensure that all encryption keys are rotated regularly. If Cloud KMS manages your encryption keys, you can rotate your encryption keys automatically.
+
+If you use service accounts that have Google-managed key pairs, the keys are also automatically rotated.
+
+Avoid downloading secrets
+Exposed secrets are a key attack vector for attackers. If at all possible, do not download encryption keys or other secrets, including service account keys. If you must download keys, ensure that your organization has a key rotation process in place.
+If you are using GitHub or other public repository, you must avoid leaking credentials. Implement tools such as secret scanning, which warns you about exposed secrets in your GitHub repositories. To stop keys from being committed to your GitHub repositories, consider using tools such as git-secrets.
+Use secret management solutions such as Secret Manager and Hashicorp Vault to store your secrets, rotate them regularly, and apply least privilege.
+Detect anomalous activity
+To monitor for anomalous activity, configure Google Cloud and third-party monitoring tools and set up alerts. For example, configure alerts based on administrator activity in Compute Engine audit logging information and GKE audit logs.
+In addition, use Event Threat Detection in Security Command Center to identify threats that are based on administrator activities, Google Groups changes, and IAM permission changes. Use Virtual Machine Threat Detection in Security Command Center to identify threats related to your Compute Engine VMs. For more information about Security Command Center services, see Security Command Center service tiers.
+To help detect network-based threats such as malware, configure Cloud IDS.
+Participate in the Security Command Center Cryptomining Protection Program
+If you are a Security Command Center Premium customer and use Compute Engine, you can participate in the Security Command Center Cryptomining Protection Program. This program lets you defray the Compute Engine VM costs related to undetected and unauthorized cryptomining attacks in your Compute Engine VM environment. You must implement the cryptomining detection best practices, some of which overlap with the other best practices that are described on this page.
+Update your incident response plan
+Ensure that your incident response plan and your playbooks provide prescriptive guidance for how your organization will respond to cryptocurrency mining attacks. For example, ensure that your plan includes the following:
+How to file a support case with Cloud Customer Care and contact your Google technical account manager (TAM). If you do not have a support account, review the available support plans and create one.
+How to tell the difference between legitimate high performance computing (HPC) workloads and cryptocurrency mining attacks. For example, you can tag which projects have HPC enabled, and set up alerts for unexpected cost increases.
+How to deal with compromised Google Cloud credentials.
+How to quarantine infected systems and restore from healthy backups.
+Who in your organization must be notified to investigate and respond to the attack.
+What information needs to be logged for your retrospective activities.
+How to verify that your remediation activities effectively removed the mining activities and addressed the initial vulnerability that led to the attack.
+How to respond to an alert sent from Cloud Customer Care. For more information, see Policy violations FAQ.
+For more information, see Respond to and recover from attacks.
+Implement a disaster recovery plan
+To prepare for a cryptocurrency mining attack, complete business continuity and disaster recovery plans, create an incident response playbook, and perform tabletop exercises.
+If unauthorized cryptocurrency mining occurs, ensure that you can address the threat vector that caused the initial breach and that you can reconstruct your environment from a known good state. Your disaster recovery plan must provide for the ability to determine what a known good state is so that the attacker can't repeatedly use the same vulnerabilities to exploit your resources.
+---------------------------------------------------------------------------------------------------
+CrowdStrike Discovers First-Ever Dero Cryptojacking Campaign Targeting Kubernetes
+CrowdStrike has discovered the first-ever Dero cryptojacking operation targeting Kubernetes infrastructure. Dero is a cryptocurrency that claims to offer improved privacy, anonymity and higher and faster monetary rewards compared to Monero, which is a commonly used cryptocurrency in cryptojacking operations.
+The novel Dero cryptojacking operation concentrates on locating Kubernetes clusters with anonymous access enabled on a Kubernetes API and listening on non-standard ports accessible from the internet. The attacks have been observed constantly by CrowdStrike since the beginning of February 2023 from three servers based in the U.S.
+The novel Dero cryptojacking operation is found to be targeted by an existing Monero cryptojacking operation that was modified subsequently in February 2023. The modified Monero campaign kicks out the DaemonSets used for Dero cryptojacking in the Kubernetes cluster before taking it over.
+The CrowdStrike Falcon® platform helps protect organizations of all sizes from sophisticated breaches, including cryptojacking campaigns, with industry-leading cloud-native application protection platform (CNAPP) capabilities.
+CrowdStrike has discovered the first-ever Dero cryptojacking operation targeting Kubernetes infrastructure. Dero is a relatively new and privacy-focused cryptocurrency that uses directed acyclic graph (DAG) technology to claim complete anonymity of its transactions. The combination of anonymity and the higher rewards ratio makes it potentially lucrative to cryptojacking groups compared to Monero, which is commonly used cryptocurrency by attackers or groups running miner operations. 
+
+Also detected was a Monero cryptojacking operation, which is aware of and competing with the Dero campaign. The Monero campaign uses privilege escalation using DaemonSets and host root mount, and mines XMR on the host.
+
+CrowdStrike has previously uncovered campaigns targeting vulnerable Docker and Kubernetes infrastructure in the cloud by cryptojacking botnets/groups like Kiss-a-dog, LemonDuck and WatchDog, and also for Pro-Ukranian DoS attacks.
+
+The Falcon platform protects customers and comprehensively secures cloud environments against cryptojacking campaigns by delivering a powerful combination of agentless CNAPP capabilities to protect against misconfigurations and control plane attacks, and agent-based CNAPP capabilities to protect cloud workloads with runtime security.
+
+Take the CrowdStrike Cloud Security Challenge with a free Cloud Security Health Check.
+
+CrowdStrike Falcon Detection and Protection
+With the Falcon platform, customers can implement “shift-left” strategies to identify vulnerabilities and misconfigurations at the development stage to secure Kubernetes and Docker deployments out-of-the-box, while also monitoring production environments for any suspicious activity to stop campaigns like Dero and Monero mining. The suspicious activity by the Dero and Monero campaigns was detected by CrowdStrike’s advanced machine learning and multiple behavior-based indicators of attack (IOAs) and indicators of misconfiguration (IOMs).
+
+The Falcon platform takes a defense-in-depth approach to protecting customers by leveraging incoming telemetry to power detection and provide real-time mitigation. Figure 1.A shows a custom IOA detection using the Falcon platform to detect the Dero and Monero campaigns.
+
+graphical user interface, application
+(Click to enlarge)
+
+graphical user interface, text, application, email
+(Click to enlarge)
+
+graphical user interface, text, application, email
+Figure 1.A. Falcon platform detecting Dero and Monero campaigns (Click to enlarge)
+
+Additionally, CrowdStrike’s Dynamic Container Analysis, which runs the image in a sandboxed environment to uncover potential malicious behavior, shows the suspicious process is trying to mine the Dero cryptocurrency, as shown in Figure 1.B.
+
+graphical user interface, text, application, email
+Figure 1.B. CrowdStrike’s Dynamic Container Analysis detecting the malicious process (Click to enlarge)
+
+Dero Cryptojacking Campaign Targets Kubernetes
+It has been estimated that the crypto crash of last year undercut a cryptojacking campaign’s monetary reward by 50-90%. Dero, which offers larger rewards and provides the same or better anonymizing features, is a perfect match for attackers.
+
+In February 2023, CrowdStrike observed the first-ever Dero cryptojacking campaign targeting Kubernetes infrastructure. Attackers carefully targeted Kubernetes clusters on non-standard ports by scanning and identifying exposed vulnerable Kubernetes clusters with authentication set as --anonymous-auth=true, which allows anonymous access to the Kubernetes API. A user with sufficient privileges who runs ”Kubectl proxy” can unintentionally expose a secure Kubernetes API on the host where kubectl is running, which is a less obvious way to expose the secure Kubernetes cluster bypassing authentication. Kubernetes out-of-the box doesn’t allow anonymous access to the Kubernetes control plane API. But the delayed secure-by-default decision and number of ways Kubernetes can be accidentally exposed still created a legacy of exposed systems on the internet. Attackers used the following U.S.-based IPs to scan and deploy initial payloads. 
+
+209[.]141[.]32[.]72
+209[.]141[.]42[.]48
+205[.]185[.]124[.]121
+Figure 2 shows attempts at targeting the Kubernetes cluster over a one-week period (February 3-10, 2023).
+
+chart, bar chart
+Figure 2. IPs targeting a honeypot Kubernetes cluster over a one-week period (February 3-10, 2023) (Click to enlarge)
+
+Figure 3 shows the general flow of the attack, where an attacker on the internet finds an exposed vulnerable Kubernetes cluster. After initial interaction with the Kubernetes API, the attacker deploys a Kubernetes DaemonSet named “proxy-api”. The DaemonSet deploys a malicious pod on each node of the Kubernetes cluster. This helps attackers engage resources of all of the nodes at the same time to run a cryptojacking operation. The mining efforts by the pods are contributed back to a community pool, which distributes the reward (i.e., Dero coin) equally among its contributors through their digital wallet.
+
+Let’s take a closer look at the campaign.
+
+diagram
+Figure 3. Campaign to attack a Kubernetes cluster to mine Dero (Click to enlarge)
+
+Use of Docker Hub Image with “Pause” Binary
+The Docker image used in the cryptojacking operation is hosted by Docker Hub for easy public access. Figure 4 shows the image “pauseyyf/pause:latest” was uploaded in January 2023 and has over 4,000 pulls at the time of this writing. The number of pulls implies the scope of this campaign and how many potential miner instances have been deployed. Closer analysis reveals that it is a CentOS 7 base image, where attackers added two files: “entrypoint.sh” and “pause”.
+
+graphical user interface, text, application
+(Click to enlarge)
+
+plot
+Figure 4. Malicious Docker image on Docker Hub with added binary “pause” and script “entrypoint.sh” (Click to enlarge)
+
+Figure 5 shows the content of the script “entrypoint.sh”, which is the actual entrypoint of the malicious image. Once the pod is deployed by the DaemonSet, the script tries to run a “pause” binary with a wallet address and mining pool as an argument, which signifies the “pause” binary being an actual Dero coin miner. This campaign used a community pool — i.e., community-pools[.]mysrv[.]cloud:10300 — which pays out for miniscule contributions to be made to the pool in the associated digital wallet.
+
+In a legitimate Kubernetes deployment, “pause” containers are used by Kubernetes to bootstrap a pod. Attackers may have used this name to blend in to avoid obvious detection.
+
+
+Figure 5. Script “entrypoint.sh” initializing Dero miner with campaign wallet address (Click to enlarge)
+
+Use of Kubernetes DaemonSet
+This campaign initially listed all nodes on the vulnerable Kubernetes cluster, as shown in Figure 6, where attackers used a GET query to the Kubernetes API, and once the adequate response was received, the attackers went ahead and created a DaemonSet.
+
+Figure 7 shows the yaml used by the attacker to create the DaemonSet once the vulnerable Kubernetes cluster is found. The attacker creates it under a default Kubernetes namespace “kube-system” and names it “proxy-api” to masquerade the pod. Additionally, the attacker sets pod DNS servers to a public IP (i.e., Google’s 8.8.8.8) and marks ”restartPolicy: Always” in case the pod on any of the nodes crashes.
+
+graphical user interface, text
+Figure 6. Campaign listing all nodes on the Kubernetes cluster (Click to enlarge)
+
+
+Figure 7. Kubernetes DaemonSet yaml used by campaign
+
+Silently Running Operation
+Once the vulnerable Kubernetes cluster was compromised, attackers made no attempts to pivot either by moving laterally to attack further resources or scan the internet for discovery, which is a common pattern among many cryptojacking campaigns observed in the wild.
+
+Furthermore, attackers made no attempts to delete or disrupt cluster operation. Instead, they deployed a DaemonSet to mine Dero by masquerading the DaemonSet name to “proxy-api” and miner’s name to “pause”, which are common terms in Kubernetes logs. 
+
+These focused behaviors seem to clarify the intent of this campaign, which is that the attackers are solely attempting to mine for Dero. Thus, we can suspect a financially motivated cryptojacking actor is behind this campaign.
+
+The Dero wallet address (click to scroll)
+
+deroi1qyr8wnk9aw9lel0xcufdj98cqtd3lc5y84nhl679nm3wknaz0ad6xq9pvfz92xnjm0ypwc9rt0v
+seems to be mining on mainnet, but due to privacy and anonymity features of Dero, it’s hard to track the balance of such a wallet address, and the overall value of this mining operation to date. According to Dero documentation, a wallet address along with a TX private key generated from the same wallet is needed to look at transactions and the balance on the Dero blockchain.
+
+Modified Monero Cryptojacking Campaign Tries to Take On Dero Cryptojacking Campaign
+After discovering the Dero cryptojacking campaign, CrowdStrike subsequently detected in February 2023 a modified Monero campaign attacking Kubernetes and kicking out the Dero miner to mine Monero instead.
+
+Once the misconfigured Kubernetes API is found, the modified Monero campaign first deliberately tries to delete existing DaemonSets named “proxy-api”. This signifies the Monero campaign is aware of the ongoing Dero cryptojacking campaign, and the Monero attacker wants to knock off the existing Dero cryptojacking DaemonSet before the campaign takes over the cluster and uses all of its resources.
+
+
+Figure 8. Monero campaign deleting the Dero DaemonSet “proxy-api” (Click to enlarge)
+
+Apart from “proxy-api”. the Monero campaign tries to delete the following DaemonSets. This signifies the new campaign may be aware of other campaigns, which are deploying the following DaemonSets: 
+
+api-proxy
+k8s-proxy
+Figure 9 shows yaml used by the Monero cryptojacking campaign. The difference between the Dero and Monero cryptojacking campaigns is that the Monero campaign deploys a privileged pod and mounts a “host” directory in an attempt to escape the container. Furthermore, it creates a cronjob to trigger a payload rather than immediately executing malicious scripts by overwriting cron files on the host file system. The following table shows the differences between the two campaigns.
+
+
+Dero Campaign	Monero Campaign
+1	No use of Privileged pod but used DaemonSet	Deployed Privileged pod using DaemonSet
+2.	Malicious payload entrypoint.sh is part of image pauseyyf/pause:latest	Malicious payload “ssww” is downloaded from the C2 server at runtime on busybox image
+2	No use of host root mount	Mounted host root on pod in a directory /host/
+3	No attempt to escalate pod privileges	Privilege escalation by overwriting /host/etc/cron.d/1weekly
+4	No user mode rootkit	Downloaded and compiled rootkit phsd2.c from C2 server and used ld.so.preload to load it. The rootkit hides the mining process “.system”
+5	Mined Dero cryptocurrency in the pod	Mined Monero cryptocurrency by escalating to host and installing custom service svngd.service on host
+6	Used Dero miner	Used custom UPX packed xmrig with config.json fused into binary and anonymous pool address “172[.]86[.]75[.]2:443”
+Table 1. Comparison of the Dero and Monero campaigns
+
+CrowdStrike identifies the following IPs used in the Monero cryptojacking campaign:
+
+45[.]61[.]137[.]195
+172[.]86[.]75[.]2
+
+Figure 9. Kubernetes DaemonSet yaml used by the Monero campaign (Click to enlarge)
+
+Conclusion
+As Kubernetes has become the most popular container orchestrator in the world, attackers have opportunistically targeted Kubernetes and Docker misconfigurations, design weaknesses and zero-day vulnerabilities like cr8escape, which was discovered by CrowdStrike.
+
+CrowdStrike discovered the first-ever Dero cryptojacking operation targeting Kubernetes infrastructure. Dero is a relatively new cryptocurrency that is claimed to have better anonymity features. The Dero cryptojacking campaign targeted exposed Kubernetes attack surface, in which attackers ran silently using three U.S.-based server IPs to carefully scan and identify vulnerable Kubernetes clusters and deploy payload. At the same time, CrowdStrike observed another Monero campaign, which is modified and is aware of the Dero campaign and targeting the same attack surface but using a more sophisticated approach. Both campaigns are trying to find undiscovered Kubernetes attack surfaces and are battling it out.
+
+The Falcon platform continues to protect organizations of all sizes from sophisticated breaches, including cryptojacking campaigns, with industry-leading CNAPP capabilities.
+-----------------------------------------------------------------------------------------------------------------------
+Cryptojacking campaign Qubitstrike targets exposed Jupyter Notebook instances
+News Analysis
+19 Oct 2023
+5 mins
+Cryptocurrency
+Cybercrime
+Malware
+
+Qubitstrike uses Discord servers and is designed for persistence.
+
+bitcoinage
+Credit: Antana
+Researchers have discovered a new attack campaign that compromises Jupyter Notebook instances and deploys cryptojacking malware. The operation uses Discord for command and control and steals AWS and Google Cloud credentials from compromised servers.
+
+“Qubitstrike is a relatively sophisticated malware campaign, spearheaded by attackers with a particular focus on exploitation of cloud services,” researchers from cloud forensics and incident response firm Cado Security said in a report. “Jupyter Notebooks are commonly deployed in cloud environments, with providers such as Google and AWS offering them as managed services.”
+
+Jupyter Notebook is a web-based interactive computing platform that supports over 40 programming languages and is used for data visualization, machine learning, data transformations, numerical simulations, statistical modeling, and managing various other computational outputs. It is an open-source application that can be deployed on servers and has been used as an entry-point for other cloud-based attack campaigns over the past year because it exposes powerful features including command execution.
+
+Cado observed the Qubitstrike attackers connecting to their purposely unprotected Jupyter Notebook honeypot and leveraging the terminal access feature to open a Bash command line interface and manually executing a series of reconnaissance commands to determine the system’s CPU information, the currently logged in user, whether root access was available via the su command and if the curl tool was installed.
+
+This first stage culminates with the execution of a base64-encoded command that uses curl to download a Bash script called mi.sh from an account on codeberg.org, a Git hosting platform that’s similar to GitHub. The script is saved to a temporary folder, then executed and eventually removed.
+
+Qubitstrike malware set up for persistence
+The mi.sh script sets up the system for deployment of additional tools, specifically a version of the XMRig cryptocurrency mining program. First, the script renames the curl and wget utilities in the system to avoid triggering system detections by using them. It also scans running processes for the presence of competing cryptominers and kills them, and it kills connections to a hard-coded list of IP addresses associated with cryptomining operations.
+
+
+The script also deletes various system logs and will set up persistence on the system by registering several cron jobs and adding the attacker’s SSH key to the system. More importantly, it downloads and deploys a rootkit called Diamorphine. This rootkit operates as a kernel module that’s loaded with the insmod command and its purpose is to hide the attacker’s processes on the system.
+
+If the insmod command fails, the attackers compile Diamorphine from source as a Linux Shared Object file and then use the LD Preload technique to register it with the dynamic linker, resulting in the malicious file executing every time a new executable is launched on the system.
+
+“Diamorphine is well-known in Linux malware circles, with the rootkit being observed in campaigns from TeamTNT and, more recently, Kiss-a-dog,” the Cado researchers said. “Compiling the malware on delivery is common and is used to evade EDRs and other detection mechanisms.”
+
+Explore related questions
+How can Jupyter Notebook users detect cryptojacking?
+What are common indicators of a compromised computing instance?
+Are there best practices for securing interactive computing platforms?
+How does cryptojacking impact system performance?
+Can cryptojacking be prevented with antivirus software?
+Ask a question
+
+Ask
+Finally, the mi.sh script searches the local directories for AWS and Google Cloud access tokens and exfiltrates any that are found to a Telegram group. The Cado researchers intentionally placed an AWS token on their honeypot system and immediately saw an attempt to use it to access the associated AWS account. Qubitstrike also acts like a SSH work, with the script trying to connect to all the IP addresses listed in the SSH hosts file on the system and attempting to push mi.sh to them.
+
+More implants found in Codeberg repository
+By investigating the Codeberg repository that hosted the mi.sh script, the researchers uncovered additional scripts and payloads including an implant written in Python and called kdfs.py. Once executed on a system, this implant will act as a bot that will join a Discord server and channel and wait for commands. It also supports downloading and uploading files through the Discord attachment feature.
+
+“The name of the server used is ‘NETShadow,’ and the channel the bot posts to is ‘victims’,” the researchers said. “The server also had another channel titled ‘ssh.’ However, it was empty. All of the channels were made at the exact same time on September 2, 2023, suggesting that the creation process was automated. The bot’s username is Qubitstrike (hence the name we chose to give to the malware).”
+
+The Cado researchers speculate that the kdfs.py might be executed on some systems first and then used to deploy mi.sh. However, on their honeypot system the kdfs.py bot was never deployed. While the end goal of the attack was to deploy an XMRig miner on the compromised systems, the attackers’ access is obviously not limited to that and they could pivot to other tactics as well.
+
+“Cado urges readers with Jupyter Notebook deployments to review the security of the Jupyter servers themselves, paying particular attention to firewall and security group configurations,” the researchers said. “Ideally, the notebooks shouldn’t be exposed to the public internet. If you require them to be exposed, ensure that you have enabled authentication for them.”
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+TeamTNT Allegedly Connected to SCARLETEEL Decoy Attack
+A few days ago, the SCARLETEEL advanced hacking operation was reported in which the adversary targets Kubernetes hosted on AWS to steal sensitive proprietary data via a complex exploitation chain. New research has revealed that the cryptojacking group TeamTNT may be behind that attack.
+What has been discovered?
+Analysis by Cado Security has revealed that the initial phase of the attack leveraged a cryptocurrency miner, whose TTPs are consistent with the typical attack tactics used by TeamTNT.
+Researchers found an XMR configuration file (config_background.json) on VirusTotal, with the same IOCs as the miner sample involved in the SCARLETEEL campaign. 
+The script uses the string hilde in the author name field, which is associated with TeamTNT. It further uses the same wallet ID as used by TeamTNT in past attacks.
+It has further overlaps such as preparatory configuration steps for putting hard limits on resource usage, dynamic linker hijacking, enumeration of hardware resources, steps to prevent logging history, and clean-up using the function CLEANUP_BY_TRUMP().
+
+Other connecting factors
+The domain name used as the C2 (DonaldTrump[.]cc) was never used in any malicious campaign, indicating it to be a fresh infrastructure created for a new campaign. 
+However, Passive DNS analysis (historical record of DNS communications) of the above domain suggests that it was last updated in May 2021.
+Hence, it is likely that this is an old sample used by TeamTNT but never identified and analyzed by any security personnel earlier.
+
+Despite all the similarities, researchers could not connect the two malware with full confidence. According to them, it is possible that another group is simply copying the tactics. Moreover, there are several IOCs that do not match TeamTNT’s trademark signatures, thus leaving a margin for doubt.
+
+Concluding notes
+TeamTNT is a significant threat when it comes to targeting cloud environments. Its involvement in the SCARLETEEL further complicates the attack, indicating that this group may be attempting new tricks besides cryptojacking. It is possible that due to the collapsing prices of crypto, the group is experimenting with new types of attacks to make profits.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Cryptojacking
+ Amit ShepsJanuary 19, 2023
+What Is Cryptojacking? 
+Cryptojacking is the unauthorized use of someone’s computer to mine cryptocurrency. This is typically done by installing malware on the victim’s computer that uses their processing power to mine cryptocurrency without their knowledge or consent. 
+
+Cryptomining can slow down the victim’s computer and cause it to use more electricity, potentially leading to higher electricity bills for the victim. Cryptojacking is a form of cyber attack and is illegal in many countries.
+
+This is part of a series of articles about application security. 
+
+In this article:
+
+How Does Cryptojacking Malware Work?The Impact of CryptojackingCryptojacking Attack MethodsCryptojacking ExamplesCoinhiveWannaMine v4.0FaceXWormBlack-TBest Practices for Detecting and Preventing Cryptojacking AttacksCryptojacking Attacks in Cloud NativeHow Does Cryptojacking Malware Work?
+Cryptojacking is prevalent because it has a low entry barrier and is highly profitable. Hackers can sneak into devices and run cryptomining malware with just a few lines of code (usually JavaScript), operating undetected in the background.
+
+Cryptojackers often bait users into clicking on links in phishing emails and downloading malicious code to their devices. Another approach is to infect websites using cryptojacking command lines embedded in HTML code—this code then runs the mining program automatically when the user opens the infected webpage.
+
+Some types of cryptojacking malware can even pass the virus to additional devices. In some cases, attackers can benefit from the large computing resources of a server farm for free.
+
+Cryptojacking attacks don’t usually involve the corruption or theft of personal data. The main objective is to access and utilize the machine’s computing power. Hackers have an incentive to remain undetected because the longer the mining program runs, the more cryptocurrency they can obtain. 
+
+The Impact of Cryptojacking
+The main way that cryptojacking impacts a victim’s computer is by slowing it down and causing it to use more electricity. This is because the malware installed on the victim’s computer will use their computer’s processing power to mine cryptocurrency. 
+
+Cryptojacking malware can strain a computer’s hardware, cause it to overheat, and might shorten its lifespan. In addition, having malware installed on a computer can leave it vulnerable to other attacks.
+
+Cryptojacking Attack Methods 
+There are two main types of cryptojacking attacks:
+
+Web browser-based attacks involve using a website or online ad to deliver the cryptojacking malware to the victim’s computer. When the victim visits the website or clicks on the ad, the malware is automatically downloaded and installed on their computer. This type of attack is known as “drive-by cryptojacking” because the victim’s computer is compromised simply by visiting a website.
+Host-based attacks involve installing the cryptojacking malware directly on the victim’s computer. This can be done through a variety of methods, such as sending the victim a malicious email attachment, using a fake app or game that contains the malware, or compromising the supply chain of a legitimate software provider and inserting the malware into the software.
+Cryptojacking Examples
+Coinhive
+Coinhive was a cryptocurrency mining service that was launched in 2017. It allowed website owners to embed a JavaScript code on their websites, which would then use the website visitor’s computer to mine the Monero cryptocurrency. This was known as “in-browser mining,” and it was a form of cryptojacking.
+
+Coinhive was designed to be a legitimate way for website owners to generate revenue from their websites without relying on advertising. However, it was widely used by attackers to deliver cryptojacking malware to victims’ computers without their knowledge or consent. Eventually, Coinhive was shut down in March 2019 due to declining user interest and increasing regulatory scrutiny.
+
+WannaMine v4.0
+WannaMine is a type of malware that is used in cryptojacking attacks, first discovered in 2018. It is typically delivered to victims’ computers through a phishing email that contains a malicious attachment. When the victim opens the attachment, the WannaMine malware is installed on their computer. The malware then uses the victim’s computer to mine the Monero cryptocurrency.
+
+In addition to mining cryptocurrency, WannaMine is also designed to spread itself to other computers on the same network. WannaMine v4.0 is the latest version of the WannaMine malware. It was discovered in 2020 and is known for using multiple methods to avoid detection and removal. It is also capable of stealing sensitive information from the victim’s computer.
+
+FaceXWorm
+FaceXWorm uses social engineering to trick Facebook Messenger users into clicking fake YouTube links. They arrive at a fake site that urges users to download a Chrome extension to view the content—this extension hijacks their Facebook account and connects them to a network of friends, to allow the worm to spread. In addition, it deploys the FaceXWorm malware and starts mining cryptocurrency on their device.
+
+FaceXWorm does not only hijack a user’s device to mine cryptocurrency. When users try to log in to certain sites, such as Google or MyMonero, their credentials are hijacked, and they are redirected to fake platforms that require the user to pay cryptocurrency. As part of this process, the worm leverages the user’s credentials to transfer large amounts of cryptocurrency to the attackers.
+
+Black-T 
+Black-T is a cryptojacking malware variant created by TeamTNT, a cybercriminal group that targets AWS credentials on compromised systems and mines for Monero currency. Traditionally, TeamTNT targeted APIs with exposed Docker daemons and scanned for vulnerable systems to carry out cryptojacking attacks. 
+
+However, the Black-T code provides enhanced capabilities, including targeting and blocking previously unknown cryptojacking worms like the Crux worm and ntpd miner (a redis-bakup cryptominer). It also uses password scraping operations in memory with mimipenguins and mimipy, identifying passwords and exfiltrating them to the TeamTNT control center.
+
+Black T can also extend the group’s cryptojacking efforts by combining different network scanners to identify Docker daemon APIs in the target network, including in local and public networks. These include pnscan, masscan, and zgrab—the first time TeamTNT has used a GoLang tool. 
+
+Best Practices for Detecting and Preventing Cryptojacking Attacks 
+The following best practices can help detect and prevent cryptojacking in your organization:
+
+Keep computers and web browsers up to date—make sure that devices and web browsers are always running the latest version, as these updates often include security fixes that can protect against new forms of malware.
+Use a reputable anti-malware software—install and regularly update antivirus and security software on all devices to help protect against malware and other threats.
+Educate users to be cautious when opening emails and attachments—emails and attachments from unknown sources are often used to deliver malware, including cryptojacking.
+Prevent unauthorized downloads—implement company policies and content filtering systems to ensure users can only download legitimate, approved software.
+Use ad blockers—consider using a reputable ad blocker to protect against drive-by cryptojacking attacks that use online ads or popups. 
+Use zero-day protection—zero-day protection involves using software or other technologies to protect against new and unknown threats that have not been seen before. This can help protect against new forms of cryptojacking that are not yet recognized by traditional antivirus and security software.
+Implement strong authentication—strong authentication involves using multiple methods to verify a user’s identity before granting them access to a system or network. This can help prevent access to sensitive systems by cryptojacking malware.
+Protect cloud resources—the cloud can provide large-scale resources for cryptojacking. If you use cloud computing services, make sure to properly secure cloud resources to prevent unauthorized access—implement strong authentication, encrypt data in transit and at rest, and regularly update your security software and settings.
+Use anti-bot protection—anti-bot protection involves using software or other technologies to detect and prevent botnets, which are networks of compromised computers that are often used to distribute malware. Anti-bot protection can help prevent malware from spreading to a computer or network.
+Cryptojacking Attacks in Cloud Native
+Hackers compromise cloud accounts to create distributed cryptomining workloads—they compromise vulnerable and misconfigured cloud computing resources and use it for cryptomining, overloading systems and resulting in higher charges for cloud services. 
+
+For example, the Romanian hacker group Outlaw compromises Linux servers and Internet of Things (IoT) devices by using default or stolen credentials and exploiting known vulnerabilities to launch DDoS attacks or mine Monero currency. Another group, TeamTNT, is more sophisticated, targeting software service vulnerabilities—it claimed it would stop operating but ramped up its attacks instead. 
+
+Another group responsible for many cryptojacking exploits in the cloud is Kinsing. It quickly targeted the Log4j vulnerability to compromise cloud native environments. Other hackers have discovered ways to exploit free-tier services for continuous integration and continuous deployment (CI/CD) pipelines. They target Azure DevOps, CircleCI, BitBucket, GitHub, and GitLab to combine transient workloads into cryptomining cloud services.
+
+
+
+
+==========================
+
+
+
+
+
+A sophisticated attack campaign dubbed SCARLETEEL is targeting containerized environments to perpetrate theft of proprietary data and software.
+
+"The attacker exploited a containerized workload and then leveraged it to perform privilege escalation into an AWS account in order to steal proprietary software and credentials," Sysdig said in a new report.
+
+The advanced cloud attack also entailed the deployment of crypto miner software, which the cybersecurity company said is either an attempt to generate illicit profits or a ploy to distract defenders and throw them off the trail.
+
+The initial infection vector banked on exploiting a vulnerable public-facing service in a self-managed Kubernetes cluster hosted on Amazon Web Services (AWS).
+
+Upon gaining a successful foothold, an XMRig crypto miner was launched and a bash script was used to obtain credentials that could be used to further burrow into the AWS cloud infrastructure and exfiltrate sensitive data.
+
+"Either crypto mining was the attacker's initial goal and the goal changed once they accessed the victim's environment, or crypto mining was used as a decoy to evade the detection of data exfiltration," the company said.
+
+The intrusion notably also disabled CloudTrail logs to minimize the digital footprint, preventing Sysdig from accessing additional evidence. In all, it allowed the threat actor to access more than 1TB of data, including customer scripts, troubleshooting tools, and logging files.
+
+"They also attempted to pivot using a Terraform state file to other connected AWS accounts to spread their reach throughout the organization," the company said. This, however, proved to be unsuccessful due to lack of permissions.
+
+The findings come weeks after Sysdig also detailed another cryptojacking campaign mounted by the 8220 Gang between November 2022 and January 2023 targeting exploitable Apache web server and Oracle Weblogic applications.
+
+
+
+
+
+============================
+
+
+
+
+
+
+The cryptojacking group known as TeamTNT is suspected to be behind a previously undiscovered strain of malware used to mine Monero cryptocurrency on compromised systems.
+
+That's according to Cado Security, which found the sample after Sysdig detailed a sophisticated attack known as SCARLETEEL aimed at containerized environments to ultimately steal proprietary data and software.
+
+Specifically, the early phase of the attack chain involved the use of a cryptocurrency miner, which the cloud security firm suspected was deployed as a decoy to conceal the detection of data exfiltration.
+
+The artifact – uploaded to VirusTotal late last month – "bear[s] several syntactic and semantic similarities to prior TeamTNT payloads, and includes a wallet ID that has previously been attributed to them," a new analysis from Cado Security has revealed.
+
+TeamTNT, active since at least 2019, has been documented to repeatedly strike cloud and container environments to deploy cryptocurrency miners. It's also known to unleash a crypto mining worm capable of stealing AWS credentials.
+
+While the threat actor willingly shut down their operations in November 2021, cloud security firm Aqua disclosed in September 2022 a fresh set of attacks mounted by the group targeting misconfigured Docker and Redis instances.
+
+That said, there are also indications that rival crews such as WatchDog might be mimicking TeamTNT's tactics, techniques, and procedures (TTPs) to foil attribution efforts.
+
+Another activity cluster of note is Kiss-a-dog, which also relies on tools and command-and-control (C2) infrastructure previously associated with TeamTNT to mine cryptocurrency.
+
+There is no concrete evidence to tie the new malware to the SCARLETEEL attack. But Cado Security pointed out that the sample surfaced around the same time the latter was reported, raising the possibility that this could be the "decoy" miner that was installed.
+
+The shell script, for its part, takes preparatory steps to reconfigure resource hard limits, prevent command history logging, accept all ingress or egress traffic, enumerate hardware resources, and even clean up prior compromises before commencing the activity.
+
+Like other TeamTNT-linked attacks, the malicious payload also leverages a technique referred to as dynamic linker hijacking to cloak the miner process via a shared object executable called libprocesshider that uses the LD_PRELOAD environment variable.
+
+Persistence is achieved by three different means, one of which modifies the .profile file, to ensure that the miner continues to run across system reboots.
+
+The findings come as another crypto miner group dubbed the 8220 Gang has been observed using a crypter called ScrubCrypt to carry out illicit cryptojacking operations.
+
+What's more, unknown threat actors have been found targeting vulnerable Kubernetes container orchestrator infrastructure with exposed APIs to mine the Dero cryptocurrency, marking a shift from Monero.
+
+Cybersecurity company Morphisec, last month, also shed light on an evasive malware campaign that leverages the ProxyShell vulnerabilities in Microsoft Exchange servers to drop a crypto miner strain codenamed ProxyShellMiner.
+
+"Mining cryptocurrency on an organization's network can lead to system performance degradation, increased power consumption, equipment overheating, and can stop services," the researchers said. "It allows threat actors access for even more nefarious ends."
+
+"The SCARLETEEL threat actor is similar to TeamTNT based on command execution and the cloud pivot, but it could be someone copying their methodology and attack patterns," Stefano Chierici, threat research lead manager at Sysdig, told The Hacker News
+
+"SCARLETEEL's other TTPs and IoCs – IPs, crypto wallets – did not match compellingly [with] TeamTNT trademarks," Chierici further added.
+
+The Strategic Guide to Cloud Security
+
+Unlock practical steps to securing everything you build and run in the cloud.
+
+Goodbye, Atlassian Server. Goodbye… Backups?
+
+Protect your data on Atlassian Cloud from disaster with Rewind's daily backups and on-demand restores.
+
+Take Action Fast with Censys Search for Security Teams
+
+Stay ahead of advanced threat actors with best-in-class Internet intelligence from Censys Search.
+
+
+===========================================
+
+
+The infamous cryptocurrency miner group called 8220 Gang has been observed using a new crypter called ScrubCrypt to carry out cryptojacking operations.
+
+According to Fortinet FortiGuard Labs, the attack chain commences with the successful exploitation of susceptible Oracle WebLogic servers to download a PowerShell script that contains ScrubCrypt.
+
+Crypters are a type of software that can encrypt, obfuscate, and manipulate malware with the goal of evading detection by security programs.
+
+ScrubCrypt, which is advertised for sale by its author, comes with features to bypass Windows Defender protections as well as check for the presence of debugging and virtual machine environments.
+
+"ScrubCrypt is a crypter used to secure applications with a unique BAT packing method," security researcher Cara Lin said in a technical report. "The encrypted data at the top can be split into four parts using backslash '\.'"
+
+The crypter, in the final stage, decodes and loads the miner payload in memory, thereby launching the miner process.
+
+The threat actor has a track record of taking advantage of publicly disclosed vulnerabilities to infiltrate targets, and the latest findings are no different.
+
+The development also comes as Sydig detailed attacks mounted by the 8220 Gang between November 2022 and January 2023 that aim to breach vulnerable Oracle WebLogic and Apache web servers to drop the XMRig miner. 
+
+In late January 2023, Fortinet also uncovered cryptojacking attacks that make use of Microsoft Excel documents containing malicious VBA macros that are configured to download an executable to mine Monero (XMR) on infected systems.
+
+The Strategic Guide to Cloud Security
+
+Unlock practical steps to securing everything you build and run in the cloud.
+
+Goodbye, Atlassian Server. Goodbye… Backups?
+
+Protect your data on Atlassian Cloud from disaster with Rewind's daily backups and on-demand restores.
+
+Take Action Fast with Censys Search for Security Teams
+
+Stay ahead of advanced threat actors with best-in-class Internet intelligence from Censys Search.
+
+
+
+========================
+
+
+A new cryptojacking campaign has been uncovered targeting vulnerable Docker and Kubernetes infrastructures as part of opportunistic attacks designed to illicitly mine cryptocurrency.
+
+Cybersecurity company CrowdStrike dubbed the activity Kiss-a-dog, with its command-and-control infrastructure overlapping with those associated with other groups like TeamTNT, which are known to strike misconfigured Docker and Kubernetes instances.
+
+The intrusions, spotted in September 2022, get their name from a domain named "kiss.a-dog[.]top" that's used to trigger a shell script payload on the compromised container using a Base64-encoded Python command.
+
+"The URL used in the payload is obscured with backslashes to defeat automated decoding and regex matching to retrieve the malicious domain," CrowdStrike researcher Manoj Ahuje said in a technical analysis.
+
+The attack chain subsequently attempts to escape the container and move laterally into the breached network, while simultaneously taking steps to terminate and remove cloud monitoring services.
+
+As additional methods to evade detection, the campaign makes use of the Diamorphine and libprocesshider rootkits to hide malicious processes from the user, the latter of which is compiled as a shared library and its path is set as the value for the LD_PRELOAD environment variable.
+
+"This allows the attackers to inject malicious shared libraries into every process spawned on a compromised container," Ahuje said.
+
+The ultimate goal of the campaign is to stealthily mine cryptocurrency using the XMRig mining software as well as to backdoor Redis and Docker instances for mining and other follow-on attacks.
+
+"As cryptocurrency prices have dropped, these campaigns have been muffled in the past couple of months until multiple campaigns were launched in October to take advantage of a low competitive environment," Ahuje noted.
+
+The findings also come as researchers from Sysdig took the wraps off another sophisticated crypto mining operation dubbed PURPLEURCHIN, which leverages the compute allocated for free trial accounts across GitHub, Heroku, and Buddy[.]Works to scale the attacks.
+
+As many as 30 GitHub accounts, 2,000 Heroku accounts, and 900 Buddy accounts are said to have been utilized in the automated freejacking campaign.
+
+The attack entails the creation of an actor-controlled GitHub account, each containing a repository that, in turn, has a GitHub Action to run mining operations by launching a Docker Hub image.
+
+"Using free accounts shifts the cost of running the cryptominers to the service provider," the researchers said. "However, like many fraud-use cases, the abuse of free accounts can affect others. Higher expenses for the provider will lead to higher prices for its legitimate customers."
+
+
+Protect your data on Atlassian Cloud from disaster with Rewind's daily backups and on-demand restores.
+
+
+=========================
+
+
+GitHub Actions and Azure virtual machines (VMs) are being leveraged for cloud-based cryptocurrency mining, indicating sustained attempts on the part of malicious actors to target cloud resources for illicit purposes.
+
+"Attackers can abuse the runners or servers provided by GitHub to run an organization's pipelines and automation by maliciously downloading and installing their own cryptocurrency miners to gain profit easily," Trend Micro researcher Magno Logan said in a report last week.
+
+GitHub Actions (GHAs) is a continuous integration and continuous delivery (CI/CD) platform that allows users to automate the software build, test, and deployment pipeline. Developers can leverage the feature to create workflows that build and test every pull request to a code repository, or deploy merged pull requests to production.
+
+Both Linux and Windows runners are hosted on Standard_DS2_v2 virtual machines on Azure and come with two vCPUs and 7GB of memory.
+
+The Japanese company said it identified no fewer than 1,000 repositories and over 550 code samples that are taking advantage of the platform to mine cryptocurrency using the runners provided by GitHub. The Microsoft-owned code hosting service has been notified of the issue.
+
+What's more, 11 repositories were found to harbor similar variants of a YAML script containing commands to mine Monero coins, all of which relied on the same wallet, suggesting it's either the handiwork of a single actor or a group working in tandem.
+
+"For as long as the malicious actors only use their own accounts and repositories, end users should have no cause for worry," Logan said. "Problems arise when these GHAs are shared on GitHub Marketplace or used as a dependency for other Actions."
+
+Cryptojacking-oriented groups are known to infiltrate cloud deployments through the exploitation of a security flaw within target systems, such as an unpatched vulnerability, weak credentials, or a misconfigured cloud implementation.
+
+Some of the prominent actors in the illegal cryptocurrency mining landscape include 8220, Keksec (aka Kek Security), Kinsing, Outlaw, and TeamTNT.
+
+The malware toolset is also characterized by the use of kill scripts to terminate and delete competing cryptocurrency miners to best abuse the cloud systems to their own advantage, with Trend Micro calling it a battle "fought for control of the victim's resources."
+
+That said, the deployment of cryptominers, besides incurring infrastructure and energy costs, are also a barometer of poor security hygiene, enabling threat actors to weaponize the initial access gained through a cloud misconfiguration for far more damaging goals such as data exfiltration or ransomware.
+
+"One unique aspect [...] is that malicious actor groups do not only have to deal with a target organization's security systems and staff, but they also have to compete with one another for limited resources," the company noted in an earlier report.
+
+"The battle to take and retain control over a victim's servers is a major driving force for the evolution of these groups' tools and techniques, prompting them to constantly improve their ability to remove competitors from compromised systems and, at the same time, resist their own removal."
+
+The Strategic Guide to Cloud Security
+
+Unlock practical steps to securing everything you build and run in the cloud.
+
+Goodbye, Atlassian Server. Goodbye… Backups?
+
+
+
+========================
+
+
+Late February was a wakeup call for anyone who still thought it was a good idea to illegally download software: Researchers identified a new version of cryptojacking malware hiding within cracked versions of Apple’s Final Cut Pro video editing app. This macOS-targeting malware was designed to turn the tables on pirates by hijacking their computers and using them to illegally mine Monero.
+
+While this isn’t the first time XMRig, a perfectly legal cryptominer, has been identified in pirated Final Cut Pro software, this version is particularly stealthy. If a user happens to notice their machine’s performance is suffering and opens Activity Monitor to find the source of the trouble, XMRig shuts down to avoid detection, then relaunches once Activity Monitor is closed.
+
+Cryptojacking refers to the act of using a computer or other device to mine cryptocurrency without the knowledge or consent of the device’s owner. This process is often very resource-intensive, and can cause the device’s performance to suffer or result in higher electric bills for the target.
+
+While companies such as Apple are working to bolster their defenses against cryptojacking campaigns, recent data suggests this may continue to be an uphill battle.
+
+In the 2023 SonicWall Cyber Threat Report, SonicWall Capture Labs threat researchers reported a 43% year-over-year increase in cryptojacking attempts in 2022. This spike pushed attack volume past the 100-million mark for the first time ever and set a new record high of 139.3 million attacks by year’s end.
+
+
+
+SonicWall also observed a shift in the locations being targeted. While North America experienced a 36% year-over-year increase, Asia and Europe both saw triple-digit increases, with the latter recording 6.5 times the number of attacks in 2022 as in 2021.
+
+As noted in the report, some of this growth may be due to threat actors supplementing or shifting from ransomware to more low-profile revenue streams. At least one ransomware gang has publicly announced they were shutting down their ransomware operation in favor of cryptojacking. And based on the 21% year-over-year decrease in ransomware attacks observed by SonicWall in 2022, others have likely followed suit.
+
+As cryptojacking becomes more widely adopted, it’s also expanding its territory, with threat actors continuing to broaden their scope beyond traditional Windows-based attacks. In addition to the recently discovered Final Cut Pro campaign, cryptominers have also been identified hitching a ride on other apps designed for Macs, such as Adobe Photoshop and Apple Logic Pro.
+
+Linux servers and even internal Redis servers were also popular targets for cryptojacking campaigns in 2022. While we reported on the growth in Redis attacks in our 2023 Cyber Threat Report, in just the week since its launch, another cryptojacking campaign targeting Redis has been identified — this one leveraging the legitimate tool transfer[.]sh.
+
+And as cryptojacking continues to pick up steam, cybercriminals are becoming increasingly innovative. For example, in January 2023, threat actors used automation to create 130,000 free trial accounts on cloud platform services, with the end goal of exploiting GitHub Actions workflows for illicit cryptomining.
+
+With cryptojacking attacks on the rise and the cyber landscape continuing to evolve, staying up to date on the latest threat intelligence has never been more important.
+
+“It is crucial for organizations to understand attackers’ tactics, techniques and procedures (TTPs), and commit to threat-informed cybersecurity strategies to defend and recover successfully from business-disrupting events,” said SonicWall Threat Detection and Response Strategist Immanuel Chavoya. “This includes stopping sophisticated ransomware attacks as well defending emerging threat vectors, including IoT and cryptojacking.”
+
+Securing Today’s Volatile Threat Environment
+When it comes to intel, news and developments from 2022, the above findings barely scratch the surface. For more of SonicWall’s exclusive threat intelligence, including location- and industry-specific data, download the complete 2023 SonicWall Cyber Threat Report.
+READ IT NOW
+
+This post is also available in: 
+    Portuguese (Brazil) French German Spanish ItalianAmber WolffSenior Digital Copywriter | SonicWallAmber Wolff is the Senior Digital Copywriter for SonicWall. Prior to joining the SonicWall team, Amber was a cybersecurity blogger and content creator, covering a wide variety of products and topics surrounding enterprise security. She spent the earlier part of her career in advertising, where she wrote and edited for a number of national clients.
+
+When it comes to intel, news and developments from 2022, the above findings barely scratch the surface. For more of SonicWall’s exclusive threat intelligence, including location- and industry-specific data, download the complete 2023 SonicWall Cyber Threat Report.
+
+READ IT NOW
+
+
+This post is also available in: 
+    Portuguese (Brazil) French German Spanish ItalianAmber WolffSenior Digital Copywriter | SonicWallAmber Wolff is the Senior Digital Copywriter for SonicWall. Prior to joining the SonicWall team, Amber was a cybersecurity blogger and content creator, covering a wide variety of products and topics surrounding enterprise security. She spent the earlier part of her career in advertising, where she wrote and edited for a number of national clients.
+
+=======================
+
+
+
+
+				Cybercriminal group Automated Libra's PurpleUrchin campaign uses the fake accounts for cryptomining operations.			
+
+
+
+A group of attackers is running a cryptomining operation that leverages the free or trial-based cloud computing resources and platforms offered by several service providers including GitHub,  Heroku, and Togglebox. The operation is highly automated using CI/CD processes and involves the creation of tens of thousands of fake accounts and the use of stolen or fake credit cards to activate time-limited trials.
+
+Researchers from Palo Alto Networks’ Unit 42 have dubbed the group Automated Libra and believe it’s based in South Africa. During the peak of the campaign, dubbed PurpleUrchin, in November, the group was registering between three and five GitHub accounts every minute using automated CAPTCHA defeating processes with the intention to abuse GitHub Actions workflows for mining.
+
+“Each of the GitHub accounts was subsequently involved in a play-and-run strategy, where each account would use computational resources, but threat actors ultimately left their tabs unpaid,” the researchers said in their report. “This appears to be a standard operational procedure for PurpleUrchin, as there is evidence that they created more than 130,000 accounts across various virtual private server (VPS) providers and cloud service providers (CSPs).”
+
+Researchers refer to the abuse of free offers as freejacking, and the creation of accounts that incur charges and then are never paid as “play and run.” The latter is more difficult to pull off because most service providers require the user to register a valid credit card or payment method before giving them access to paid-for computing resources. However, even if usage is tracked and charged on a per-minute basis, the bill is usually issued after a longer period. This gives attackers a time window to abuse such services.
+
+Automated Libra seems to have used both methods, suggesting they had access to stolen credit cards or at least cards that would be accepted by the system even if they were later flagged as stolen and locked by the issuers. This shows the importance of having strong anti-fraud payment systems in place.
+
+PurpleUrchin has been operating since 2019, and even though they often abused VPS providers that offer full virtualized servers, they’ve also extended their operation to target cloud application hosting platforms. Heroku, for example, provides a cloud application hosting platform that supports multiple programming languages, while Togglebox provides both VPS and application hosting services. Both support deploying apps as containers using Docker and Kubernetes, and Automated Libra made full use of that.
+
+“The infrastructure architecture employed by the actors uses CI/CD techniques, in which each individual software component of an operation is placed within a container,” the researchers said. “This container operates within a modular architecture within the larger mining operation. CI/CD architectures provide highly modular operational environments, allowing some components of an operation to fail, be updated, or even be terminated and replaced, without affecting the larger environment.”
+
+Not all the containers are used for cryptomining. Some are used to automate the creation of accounts and deployment tasks while others are used to automate the selling of the mined cryptocurrency on different trading platforms and exchanges.
+
+GitHub Actions is a commercial CI/CD platform for automating the building and testing of software code that offers a free service for public repositories and free minutes of worker run time and storage space for private repositories. GitHub Actions workflows are automated processes defined in .yml files using YAML syntax that are executed when certain triggers or events occur. They can involve the execution of Bash scripts, generating and copying files, and more. They are basically a series of user-defined tasks executed on a virtual machine usually with the intention of compiling applications from code and testing them.
+
+To automate the creation of GitHub accounts, the attackers used containers deployed on Togglebox that contained a Chromium-based browser called Iron; xdotool, a tool used to generate keyboard and mouse inputs; and the ImageMagick toolkit, which can be used to convert, edit, and compose digital images.
+
+First, the automated process opened the GitHub account creation page Iron and opened a VNC remote desktop session to the browser. Xdotool connected to the browser via VNC and automatically filled in and submitted the form. At this stage the account creation process presents a CAPTCHA for the user to solve.
+
+The GitHub CAPTCHA challenge asks the user to select the spiral galaxy from several pictures with galaxies of different shapes. To pass it, xdotool downloads the images and passes them to ImageMagick, which is then used to convert them into complementary red, green, and blue (RGB) images. This basically turns them into splotches of red, green, and blue colors on white background. Then the ImageMagick identify command is used to determine the “skewness” of the red channel, and the image with the lowest values was chosen as the spiral galaxy.
+
+This whole automated process, which the researchers managed to recover from a container, was designed specifically for one CAPTCHA challenge and is unlikely to work with others. The researchers didn’t test how effective this technique is but have determined that the attackers managed to register over 20,000 GitHub accounts in November alone.
+
+Once the account was registered, the next step was to register for a personal access token (PAT) with workflow permissions, set up SSH keys and use the GitHub API to set up a repository and the permissions for it. The repository was then updated with a workflow generated by a PHP script to have randomized attributes and be unique from workflows deployed to other accounts.
+
+When executed, the workflow created 64 jobs and used 64 jobs and used repository_dispatch under the event github.event.client_payload.app to execute externally hosted applications. Initially, these were used to execute external Bash scripts, but then the attackers switched to executing containers that installed and initiated the cryptomining functionality.
+
+“It is important to note that Automated Libra designs their infrastructure to make the most use out of CD/CI tools,” the researchers said. “This is getting easier to achieve over time, as the traditional VSPs are diversifying their service portfolios to include cloud-related services. The availability of these cloud-related services makes it easier for threat actors because they don’t have to maintain infrastructure to deploy their applications. In the majority of cases, all they’ll need to do is to deploy a container.”
+
+While this group abuses the computing resources of cloud services providers themselves, the same modern development practices and cloud application hosting services are increasingly used to set up command-and-control infrastructure by different groups for a variety of attacks, making attribution and takedown efforts much more difficult.
+
+Lucian Constantin writes about information security, privacy, and data protection for CSO.
+
+
+
+========================
+
+
+
+
+
+
+Microsoft Defender for Cloud
+Microsoft Defender for Cloud Apps
+Microsoft Defender for Endpoint
+more
+In cloud environments, cryptojacking – a type of cyberattack that uses computing power to mine cryptocurrency – takes the form of cloud compute resource abuse, which involves a threat actor compromising legitimate tenants. Cloud compute resource abuse could result in financial loss to targeted organizations due to the compute fees that can be incurred from the abuse. In attacks observed by Microsoft, targeted organizations incurred more than $300,000 in compute fees due to cryptojacking attacks.
+
+While there are fundamental differences in how cloud providers handle authentication, permissions, and resource creation, a cloud cryptojacking attack could unfold in any environment where a threat actor can compromise an identity and create compute, and the attack lifecycle is largely the same. Microsoft security experts have surfaced tell-tale deployment patterns to help defenders determine, identify, and mitigate cloud cryptojacking attacks.
+
+To perform cloud cryptojacking, threat actors must typically have access to compromised credentials obtained through various means, highlighting the need to implement common best practices like credential hygiene and cloud hardening. If the credentials do not have the threat actors’ desired permissions, privilege escalation techniques are used to obtain additional permissions. In some cases, threat actors hijack existing subscriptions to further obfuscate their operations.
+
+Once access to the tenant is gained, threat actors create large amounts of compute, preferring core types that allow them to mine more currency faster. Threat actors use these deployed resources to start mining cryptocurrency by installing cryptomining software in the newly created virtual machines (VMs) and joining them to mining pools.
+
+In this blog post, we present insights from our research on how attackers launch cryptojacking attacks in cloud environments. These insights deepen our understanding of these threats, which in turn inform the protections that we continuously build into our cloud security solutions. We share patterns that administrators and defenders can look out for to identify if a cryptojacking attack is occurring within their cloud environment. We also provide information on how Microsoft Defender for Cloud, Microsoft Defender for Cloud Apps, and other solutions can detect cryptocurrency mining threats and related malicious activity.
+
+While this blog covers mitigation and protections against cloud cryptojacking, in general, strengthening cloud security posture, protecting cloud workloads from threats, and better control of cloud app access can help organizations defend against a wide range of cloud-based threats and risks.
+
+Cryptocurrency mining in cloud environments
+In incident response investigations and proactive research in the past year, we observed threat actors abusing administrative features to deploy and manage cryptocurrency mining resources in compromised tenants. Many of these attacks take advantage of automation, which increases the potential threat to cloud environments.
+
+Cryptocurrency mining using central processing unit (CPU) or graphics processing unit (GPU) compute in cloud environments is not financially viable if one is paying for the compute used. In order to profit, threat actors use malicious methods to avoid paying for the resources, such as abusing free trials or compromising legitimate tenants to conduct cryptojacking attacks.
+
+Unlike free trial abuse, which the cloud provider may be able to detect, cryptojacking in compromised tenants is more challenging to identify since it involves the threat actor having access to a legitimate user account. This complex method impacts the user more directly, as it allows the threat actor to make more intrusive changes in the target environment:
+
+Utilize available compute quota from compromised tenants, and provision significantly more compute and other additional resources.
+Mask resource provisioning activity as legitimate when operating within a compromised tenant.
+Use access to the compromised tenant to do further lateral movement, achieve persistence, and conduct information theft.
+Successful cloud cryptojacking attacks could result in significant unexpected charges to the compromised tenant and depletion of resources that the tenant might need for business continuity, potentially resulting in service interruption, highlighting the need to prevent, detect and mitigate cloud cryptojacking attacks.
+
+Attack lifecycle
+Cryptojacking requires the threat actor to reach a certain level of access to the cloud environment, which we explain in more detail in the next sections. The diagram below shows the stages of a typical cloud cryptojacking attack.
+
+Graphical diagram of a cryptojacking attack lifecycle. Presents the steps taken by threat actor from accessing the tenant to mining cryptocurrency. 
+Figure 1. Diagram of cryptojacking attack on a compromised cloud tenant
+In the above example, the attacker generally keeps their operational infrastructure separate from the compromised infrastructure used for mining.
+
+Initial access: Compromised credentials
+To perform this attack, the threat actor must have access to credentials that can be used to access the tenant. These credentials need to have the virtual machine contributor role, or provide a path to a user account that does. Threat actors abusing tenants in this way utilize multiple methods to gain account credentials such as phishing, using leaked credentials, and on-premises device compromise. Microsoft Incident Response investigations found that in nearly all cases observed, the accounts did not have multi-factor authentication (MFA) enabled, and no evidence of password spray or brute force was present, suggesting leaked credentials might be the most common vector.
+
+After gaining access, some threat actors use attacker-controlled virtual machines within legitimate tenants as their operational infrastructure. By using living-off-the-land techniques, threat actors can operate without any infrastructure external to the cloud environment. This attack cycle is shown in the diagram below.
+
+Graphical diagram of the attack cycle where the threat actor gains access to target tenants. 
+Figure 2. Initial access attack cycle
+In the above example, the attacker generally keeps their operational infrastructure separate from the compromised infrastructure used for mining.
+
+Privilege escalation: Elevating access
+In some observed cases, threat actors compromise the global administrator account. By design, global administrator accounts might not have access to all subscriptions and management groups within the directory; the elevate access option needs to be elevated for the account to have permissions over all resources. Access to global administrator accounts must therefore be adequately secured to prevent threat actors from elevating their access or granting roles that allow the creation of compute resources.
+
+Defense evasion: Subscription hijacking
+After gaining access to the tenant and performing reconnaissance to determine available permissions, the attacker may proceed to hijack the subscription. Subscription hijacking has been covered previously in the blog entry Hunt for compromised Azure subscriptions using Microsoft Defender for Cloud Apps.
+
+Subscription hijacking is an evasion technique that allows the threat actor to hide some of their activities from the tenant administrator and security teams. Migrating a subscription directory requires the threat actor to have sufficient privileges in the target subscription. In cases observed by Microsoft, the destination tenant may be attacker-controlled or another affected tenant that the threat actor has access to.
+
+Additionally, subscription hijacking is disruptive forensically. Microsoft Incident Response has observed instances where a threat actor compromised accounts in customer environments that were over-privileged. Abusing over-privileged accounts allowed the threat actor to migrate the subscription to a separate tenant (often attacker-controlled) to spin up additional resources. While activity logs at the subscription level remain with the subscription, anything recorded at the tenant role-based access control (RBAC) level is recorded in the new tenant, making forensic analysis, understanding the full timeline, or incident response by or for the customer, more challenging.
+
+Impact: Increasing core quotas
+Once a threat actor has access to a tenant, they can either create compute using existing core quota, or they may choose to increase core quotas within the tenant. Increasing core quotas is potentially risky for the actor as quota increases undergo review. Some quotas can’t be immediately adjusted and require a support ticket to increase.
+
+Threat actors without permission to increase quotas use whatever is available. This often leads to them exhausting available core counts across multiple regions. Quota increases have occurred up to a month before resources are deployed by the threat actor.
+
+GPU compute offerings are often targeted by threat actors. GPU compute provides access to high performance NVIDIA and AMD GPU cores, allowing cryptocurrency mining magnitudes more effective than any CPU compute offering. A complete overview of GPU compute types can be found in GPU optimized virtual machine sizes.
+
+The NVIDIA T4, V100, and A100 GPU compute options are most abused by threat actors. At time of writing, the NVIDIA A100 is the best mining card available that is not a dedicated application-specific integrated circuit (ASIC). When comparing NVIDIA GPU performance for cryptomining, the number of Compute Unified Device Architecture (CUDA) cores can be used as a rough representation of the card’s performance. CUDA is designed specifically for high performance parallel computing, which allows more computations to take place at once. For NVIDIA GPUs, more CUDA cores generally means more mining potential. The table below shows the comparative hash rate for the top three most abused GPU compute cards within cloud environments based on mining Ethereum Proof of Work (ETHW).
+
+Azure VM versions	GPU	CUDA cores	ETHW*
+NC T4 v3	NVIDIA T4	2,560	25.1MH/s
+NCv3	NVIDIA V100	5,120	89.5MH/s
+ND A100 v4	NVIDIA A100 (40GB)	6,192	175MH/s
+* Mining rates based on the Ethereum Proof of Work complexity in February 2023
+As the table above shows, threat actors who can provision NVIDIA GPU cores can mine a meaningful amount of currency in a relatively short period of time. In attacks observed by Microsoft, cryptojacking activities were seen to incur compute fees more than $300,000, illustrating how unprofitable mining is within cloud environments without committing resource theft.
+
+Impact: Deploying compute
+There are several ways to deploy compute, and threat actors have adapted to abusing features to speed up deployment. As resource hijacking is an attack of scale, the threat actor needs a way to rapidly spin up and manage multiple devices. In observed cases, threat actors have employed VM scale sets, Azure Machine Learning compute instances, Azure Batch, and Azure Container Instances. Each of these systems allows compute to be deployed quickly and centrally managed.
+
+Malicious provisioning behavior of compute using the above methods generally does not match existing compute provisioning patterns within the tenant. The graph below shows an attacker deploying NVIDIA compute cores within a target environment using VM scale sets. The Y axis shows the capacity of the VM whilst the X axis represents time, this activity spans a three-hour period. Each color represents a single region, with the attacker iterating the various regions to create compute.
+
+A line graph presenting threat actors' compute deployment pattern. The graph indicates that actors create identical numbers of batch accounts for multiple hijacked subscriptions.  
+Figure 3. Attacker compute deployment pattern
+In the graph above, the actor followed a predictable and anomalous deployment pattern across several hijacked subscriptions. Microsoft Threat Intelligence analysis shows that this deployment pattern is unique to a specific threat actor. While this specific pattern may change, the automated nature of malicious compute deployments means that an unusual pattern almost always emerges.
+
+Some staggering of deployment is used, but the threat actor ultimately needs to provision compute very quickly to make the attack profitable. This time restriction means that patterns in provisioning generally emerge over relatively short periods of time. In the above case, the entire provisioning stage of the attack took place over a three-hour period.
+
+In addition to the pattern of deployment, in this case, the following additional anomalies were also observed:
+
+The user accounts used to provision compute had never provisioned compute before.
+The compromised user provisioned GPU compute, when no GPU compute had been provisioned in this environment before.
+Compute was deployed to regions anomalous for the environment.
+Other cases observed by Microsoft showed the following deployment anomalies:
+
+A user with a recent Azure AD anomaly creating large volumes of compute.
+A user suddenly causing multiple deployment failures spanning multiple core types due to a core quota unavailability.
+Other than VM scale set deployment patterns, the same anomalous patterns can be identified within other automated deployment services such as Azure ML compute instances, Azure Batch, and Azure Container Instances.
+
+Impact: Mining cryptocurrency
+Once compute resources are deployed, the actor may need to install GPU drivers to take full advantage of the graphics card, especially on N-series VMs. Actors have been observed abusing Azure Virtual Machine extensions such as an NVIDIA GPU Driver Extension for Windows or Linux, or an AMD GPU Driver Extension for Windows, to facilitate driver installation. These extensions allow for the mass-deployment of drivers, reducing the threat actors’ setup time before mining.
+
+The following anomalies have been observed when actors use these extensions:
+
+Sudden or unusual high-volume provisioning of GPU drivers using a GPU Driver Extension.
+A user account suddenly deploying GPU extensions, especially where that user account has no history of deploying VM extensions.
+With compute prepared, the threat actor can begin mining cryptocurrency by deploying mining software to the newly created VMs. The installed mining software joins the VM to a mining pool, which allows the threat actor to pool their stolen processing power from multiple compromised tenants.
+
+Data from Microsoft Defender for Cloud shows some of the most recent pools in use by threat actors using already-compromised Azure tenants. Below is the list of the top 10 mining domains observed being used:
+
+nanopool[.]org
+nicehash[.]com
+supportxmr[.]com
+hashvault[.]pro
+zpool[.]ca
+herominers[.]com
+f2pool[.]com
+minexmr[.]com
+moneroocean[.]stream
+miner[.]rocks
+Seeing connections to any mining pool from a VM within an environment is a strong indication of compromise. Microsoft Defender for Cloud has multiple detections for this behavior.
+
+Recommendations to identify and mitigate cryptojacking attacks
+Security teams should monitor and regularly review alerts specific to these scenarios. In environments where the creation of compute or increases in quota are uncommon, additional alerts should be built to monitor associated operations within your SIEM tool like Microsoft Sentinel. These are highly environmentally specific.
+
+While every situation is unique to the customer and their environment, Microsoft Incident Response has identified several recommendations that are broadly applicable to help identify and mitigate cryptojacking attacks, alongside specific product detections. These recommendations are based on observations from responding to multiple resource abuse engagements.
+
+Separation of privileged roles: Keep administrator and normal user accounts separate. Non-administrator users who require privileged roles in the environment for specific functions should utilize Privileged Identity Management to access the roles on an as-needed basis in a way that can be audited and tracked, or also have separate accounts created. In most resource abuse cases Microsoft Incident Response has investigated, the initially compromised user is over privileged in some way. Thus, it is good practice to limit the number of accounts that have the virtual machine contributor role. In addition, accounts with this role should be protected by MFA and Conditional Access where possible. Also, since a global admin must enable the elevate access option to have permissions over all Azure resources, it should be considered a very sensitive activity that should be monitored and reviewed.
+Multifactor authentication: Tenant administrators should ensure that MFA is in use comprehensively across all accounts. This is especially important if the account has virtual machine contributor privileges. Users should also be discouraged from reusing passwords across services. Microsoft Defender for Cloud provides a range of recommendations to secure cloud environments. A full list can be found in Security recommendations – a reference guide.
+Risk-based sign-in behaviors and conditional access policies: In cases investigated, attackers who have signed in using compromised credentials have triggered high Azure Active Directory (Azure AD) risk scores. Monitoring risky user alerts and tuning detections that take advantage of this security information help prevent these attacks. In addition to analyzing Azure AD risk scores, correlating risky Azure AD behavior with follow-on activity can help produce additional true positive detections. Risk-based conditional access policies can be designed to require multifactor reauthentication, enforce device compliance, force the user to update their password, or outright block the authentication. In many cases, policies such as these can be disruptive enough to provide security teams with enough time and signal to respond or alert the legitimate user to an issue before the resource abuse begins.
+Standard login anomaly detections were also found applicable in cases investigated by Microsoft Incident Response, with threat actors commonly using proxy services, signing in from anomalous locations, and accessing accounts using anomalous user agents. One group of activity tracked by Microsoft Threat Intelligence used Python requests and the default user agent (python-requests/2.26.0) for all operations.
+Microsoft 365 Defender uses detections such as Access elevation by risky user and Risky user performed suspicious Azure activities, which correlate users marked as risky by Azure AD with anomalous actions to raise the severity of alerts in Microsoft 365 Defender.
+Lastly, authentication to a tenant from an IP that is outside of that tenant should be  anomalous. Defenders can identify which IP addresses are allocated within a tenant using the az vm list-ip-addresses command.
+Limit unused quota and monitor for unexpected quota increases: Looking for multiple unexpected quota increases occurring in a short period of time, quota increases across multiple regions, or quota increases within regions that the environment does not normally use might allow for early detection of a resource abuse attack. Quota increases are one of the first signals Microsoft Incident Response looks for when investigating suspected resource abuse attack. Quota increase detections can potentially be refined by looking for increases to commonly abused core types, especially if their usage is otherwise rare in an environment.
+Monitor for external Azure IP addresses authenticated with your tenant: Threat actors performing these attacks also use Azure compute resources to conduct their operations. Monitoring for successful sign in activity from Azure IP addresses that are not owned by your tenant is often a strong indicator of suspicious activity. Seeing multiple authentication attempts from Azure IP addresses using the same browser user agent is another strong indicator of potential password guessing.
+Detection details
+Microsoft 365 Defender
+Microsoft 365 Defender is becoming Microsoft Defender XDR. Learn more.
+
+Microsoft 365 Defender uses its cross-workloads detection capabilities to provide enhanced protection against cryptocurrency mining attacks. Microsoft 365 Defender customers who have enabled their Azure connector in Microsoft Defender for Cloud Applications can benefit from the following alerts:
+
+Access elevation by risky user
+Suspicious Azure activities related to possible cryptocurrency mining
+Mass provisioning of GPU virtual machines for possible cryptocurrency mining
+Suspicious creation of multiple Azure ML clusters and workspaces
+Suspicious role assignment in Azure subscription
+VM quota modified after risky user signed in
+Microsoft Defender for Cloud Applications
+The following Microsoft Defender for Cloud Application alerts indicate threat activity related to the attack discussed in this post:
+
+Multiple delete VM activities
+Multiple VM creation activities
+Microsoft Defender for Cloud
+Microsoft Defender for Cloud detects threat components associated with the activities outlined in this article with the following alerts:
+
+Azure Resource Manager operation from suspicious proxy IP address
+Crypto-mining activity
+Digital currency mining activity (Preview)
+Fileless attack toolkit detected 
+Possible Cryptocoinminer download detected 
+Process associated with digital currency mining detected 
+Potential crypto coin miner started 
+Suspicious Azure role assignment detected (Preview)
+Suspicious creation of compute resources detected (Preview)
+Suspicious installation of a GPU extension was detected in your virtual machine (Preview)
+Suspicious invocation of a high-risk ‘Execution’ operation by a service principal detected (Preview)
+Suspicious invocation of a high-risk ‘Execution’ operation detected (Preview)
+Suspicious invocation of a high-risk ‘Impact’ operation by a service principal detected (Preview)
+Suspicious invocation of a high-risk ‘Impact’ operation detected (Preview)
+Suspicious subscription transfer to external tenant was detected (Preview)
+Microsoft Defender for Endpoint
+The following Microsoft Defender for Endpoint alert can indicate associated threat activity:
+
+Possible cryptocurrency miner
+Hunting queries
+Microsoft Sentinel
+Microsoft Sentinel customers can use the TI Mapping analytics (a series of analytics all prefixed with ‘TI map’) to automatically match the malicious domain indicators mentioned in this blog post with data in their workspace. If the TI Map analytics are not currently deployed, customers can install the Threat Intelligence solution from the Microsoft Sentinel Content Hub to have the analytics rule deployed in their Sentinel workspace. More details on the Content Hub can be found here:
+
+In addition, Microsoft Sentinel customers can leverage the following content to hunt for and detect related activity in their environments:
+
+Crypto currency miners
+Suspicious cryptocurrency mining related threat activity detected
+Detecting Anomaly Sign-In Event
+Administrator Authenticating to Another Azure AD Tenant
+Creation of an anomalous number of resources
+Appendix
+Top 10 mining domains used by threat actors:
+
+nanopool[.]org
+nicehash[.]com
+supportxmr[.]com
+hashvault[.]pro
+zpool[.]ca
+herominers[.]com
+f2pool[.]com
+minexmr[.]com
+moneroocean[.]stream
+miner[.]rocks
+
+
+
+
+
+===================================
+
+
+
+
+
+
+

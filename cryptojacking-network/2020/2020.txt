@@ -1,0 +1,79 @@
+Cryptojacking is the act of using an individual's or an organization's computational power in order to mine cryptocurrency. In some scenarios, this can be considered as a monetization strategy, very much similar to advertisements. But to do so without the explicit consent of the computer owners is considered illegitimate. During previous years, attackers' focus was heavily laid on browser-based cryptojacking. However, it was noted that the attackers are now shifting their attention to more robust, more superior targets, such as cloud servers and cloud infrastructure. This paper analyses 11 forms of practical scenarios of cryptojacking attacks that are targeted towards cloud infrastructure. We carefully look at their similarities and properties, comparing those features with the limitations of existing literature regarding the detection systems. In this paper, we survey the attack forms, and we also survey the limitations of existing literature as an attempt to outline the research gap between the practical scenarios and existing work.
+
+
+
+Security and privacy
+
+Intrusion/anomaly detection and malware mitigation
+
+Malware and its mitigation
+
+A wave of alternative coins that can be effectively mined without specialized hardware, and a surge in cryptocurrencies' market value has led to the development of cryptocurrency mining ( cryptomining ) services, such as Coinhive, which can be easily ...
+
+In-browser cryptojacking is an urgent threat to web users, where an attacker abuses the users’ computing resources without obtaining their consent. In-browser mining programs are usually developed in WebAssembly (Wasm) for its great performance. Several ...
+
+
+
+A new threat known as "cryptojacking" has entered the picture where cryptojacking malware is the future trend for cyber criminals, who infect victim's device, install cryptojacking malware, and use the stolen resources for crytocurrency mining. Worse ...
+
+===================
+
+ few years ago, all the buzz was about “Bitcoin” as the cryptocurrency’s exchange rate skyrocketed to just under $20,000 per one Bitcoin. But that also triggered cybercriminals to start looking for weaknesses to exploit in crypto wallets and online exchanges. They also searched for methods to mine cryptocurrencies without investing in hardware resources.
+
+Mining cryptos is expensive. You need processors and air conditioning equipment to power the machines, as well as water-cooled computers to dig for digital gold. And even if you find a good deal on mining equipment, you still face substantial electricity bills to power them.
+
+And that’s how the cryptojacking malware came to life, spreading at a tremendous pace after the Bitcoin boom in 2017.
+
+What is Cryptojacking Malware?
+Through cryptojacking, hackers can use your device’s computing power to mine cryptocurrencies without your knowledge. The malware can infiltrate your device through malicious links, websites, or ads. Once the cryptomining code auto-executes, it will run in the background as users won’t suspect a thing.
+
+Cryptojacking malware isn’t like regular malicious software. It does not target your data or login credentials for other services. Instead, they allow attackers to mine digital currencies using your device’s resources. Now, cybercriminals don’t just aim for top-grade computers with high processing capabilities. On the contrary, they also attack regular devices, including your phone, tablet, or laptop.
+
+Furthermore, most of the cryptojacking code is designed to remain hidden as long as possible, activating only when you’re not using your computer. Almost any desktop or mobile computer has long idle periods during the day, totaling three to four hours. If you combine the total idle time of hundreds or thousands of infected processors, you get a vast amount of computing power put together.
+
+And that is what cybercriminals do to mine cryptocurrencies. Instead of getting dedicated equipment for mining, which costs a lot of money, they hack into the processing units of as many devices as possible, then use their resources.
+
+Signs You Are Running Cryptojacking Malware
+As I mentioned earlier, cryptojacking uses your device’s resources without your knowledge and tries its best to remain undetected. But just like any other malware, there are signs to its presence that you must not ignore.
+
+First of all, no computer ever runs at 100% of its capacity for long periods. Devices perform at maximum levels only when they process large amounts of data and when several resource-consuming applications run simultaneously. It may happen during peak work hours on a busy day, but it is not the usual behavior of an office computer.
+
+Spot Cryptojacking
+Source: Broadcom/Symantec
+When cybercriminals steal your device’s resources using cryptojacking malware, you’ll notice that your computer will heat up very fast. This malicious software will also consume battery life quickly if your computer is unplugged from the power grid. Sometimes, you can hear your hard disk running as well.
+
+All these signs do not necessarily mean that a cryptojacking malware has infiltrated your device. Nonetheless, the matter still requires your immediate attention as it shortens your computer’s life. But in most cases, if you experience all these anomalies at once, the chances are your device has been hit by a cryptojacking malware.
+
+Methods to Detect and Remove Cryptojacking Code
+Installing antivirus software and firewalls is a no brainer. What you really need in the case of cryptojacking malware are performance monitoring tools. These can track your computer’s performance and loads and alert you about unusual activities, especially during idle periods.
+
+For instance, there is definitely something wrong if your Windows-based servers start running at nearly full capacity in the middle of the night when the office is empty.
+
+Hackers use your device to run complicated mathematical calculations and mine cryptos. But their efforts are useless if they cannot transfer the data to their own servers. Hence, you also need to check your communications for activities that connect you to unusual sites or services.
+
+How Cryptojacking Works
+Source: Enisa
+Another important thing to remember about cryptojacking scripts is that many of them run directly into Internet browsers and mine cryptocurrency from there. For example, the popular crypto mining service Coinhive ran on numerous websites, in-browser extensions, and mobile applications. It allowed sites to use their visitors’ computing power to mine cryptos. Coinhive shut down last year. A lot of websites were upfront about using its software, most notably Salon and UNICEF.
+
+According to a 2017 Adguard report, over 33,000 websites run cryptojacking scripts. And the majority don’t even bother warning their users about it.
+
+How to Prevent Cryptojacking
+The best way to prevent this type of cryptojacking is by installing ad-blockers and filters that can identify and block services that use these malicious scripts. The same applies to your corporate website, which you should routinely scan for unknown scripts.
+
+Along with using anti-cryptomining browser extensions, it is worth considering disabling JavaScript on your device.
+
+Ad-blockers: Adding an ad-blocking tool to your device will help you avoid annoying advertisements. But most importantly, it will block potential ads that carry malware, including cryptojacking.
+Updated antivirus software: First of all, we stress that you install a premium antivirus program. Moreover, we advise you to regularly update your software (if there is no auto-update option), so that it can successfully keep blocking cryptojacking malware.
+Special browser extensions: Some developers created browser extensions that specifically block cryptomining scripts. You can fund them in your browser’s market place.
+Unnecessary browser extensions: It is better to remove or disable browser extensions that you no longer use as they might become malware carriers after an update.
+How to Deal with Cryptojacking – Final Words
+You might think that cryptojacking malware isn’t as dangerous as other malicious software that steals your sensitive data. However, you shouldn’t underestimate these programs as they consume your device’s computing power and shorten its life. Furthermore, you’ll have to cover all the electricity bills resulting from cryptomining power usage, which could go through the roof.
+
+Therefore, to minimize cryptojacking risks, you must monitor your computers’ performance and activities. The best way to do so is by installing ad-blockers and cryptojacking filters that can detect and block such malware. Moreover, you must regularly update browser extensions.
+
+Still, it all starts with the end-user. You must take the necessary time to train yourself or your employees on how to safely browse the Internet. You’ll find that most cryptojacking scripts are inside emails, ads, or websites. Therefore, keep a close eye on your IPS, DNS, and firewall logs for any strange outgoing connection activities.
+
+================
+
+
+

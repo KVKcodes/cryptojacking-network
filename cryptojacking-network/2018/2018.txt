@@ -1,0 +1,422 @@
+Meet the Scarlett Johansson PostgreSQL malware attack
+
+An image of the popular actress is being used as a malware attack vector on the open-source DBMS PostgreSQL.
+
+Written by Steven Vaughan-Nichols, Senior Contributing Editor March 15, 2018 at 4:25 p.m. PT
+
+Security
+
+8 habits of highly secure remote workers
+
+How to find and remove spyware from your phone
+
+The best VPN services: How do the top 5 compare?
+
+How to find out if you are involved in a data breach -- and what to do next
+
+It's not the first time an image has been used to give a victim malware, but it may be the first time it's been used so narrowly. According to the security firm Imperva, their StickyDB database management system (DBMS) honeypot has uncovered an attack that places malware, which cryptomines Monero, on PostgreSQL DBMS servers. Its attack vector? An image of Hollywood star Scarlett Johansson.
+
+Now, you might ask, "How many PostgreSQL DBMS servers are out there on the internet to be attacked?" The answer: "More than you'd expect." A Shodan search revealed almost 710,000 PostgreSQL servers ready to be hacked. It appears there are so many of them because it's way too easy, especially on Amazon Web Services (AWS), to set up PostgreSQL servers without security. Cryptocurrency malware attacks are becoming increasingly more common. Why not? They're profitable. The Smominru miner alone has infected at least half a million machines, mostly Windows servers, and has made at least $3.6 million. While Smominru used the relatively sophisticated EternalBlue exploit to speak, this method of attack, steganography, the hiding of data or malware in an image, is older than the hills. In this attack, what appears to be a G-rated image of Scarlett has a malware payload.
+
+Once a victim downloads the image it tries to brute force its way into your DBMS. Since a PostgreSQL instance shouldn't be simply sitting on the internet in the first place, chances are good that it hasn't been secured in other ways either. A compromised system then uses PostgreSQL to run invoke Linux or Unix shell commands to install a Monero cryptocurrency miner. Besides trying to spread itself to other targets and hide itself, the program starts looking to see if your server has access to a GPU. Without one of those, your server, whether bare-metal or virtual, is going to be doing a cryptominer much good.
+
+If it is successful, the first thing you'll know about it is when your monthly cloud bill is far higher than expected. According to Imperva, most antivirus programs fail to detect this attack.
+
+So, what can you do? Imperva recommends:
+
+Watch out of direct PostgreSQL calls to lo_export or indirect calls through entries in pg_proc. Beware of PostgreSQL functions calling to C-language binaries. Use a firewall to block outgoing network traffic from your database to the internet. Make sure your database is not assigned with public IP address. If it is, restrict access only to the hosts that interact with it (application server or clients owned by DBAs).
+
+In other words, once more the best security recommendation is to practice server security 101, and you should be immune to such attacks. And, if you must ogle the lovely Ms. Johansson, make sure you only look at safe pictures. Related Stories:
+
+AWS re:Invent 2017: Amazon Aurora PostgreSQL headlines pre-show announcements Cyber attackers are cashing in on cryptocurrency mining - but here's why they're avoiding bitcoin A giant botnet is forcing Windows servers to mine cryptocurrency
+
+
+
+
+
+
+===================
+
+
+
+
+
+
+
+Enterprise environments are lucrative targets for such attacks due to the possibility of access to expensive, high-powered public cloud compute resources, rather than the sliver of power made available through your average PC owned by the general public.
+
+Back in February, Tesla became a victim of such an attack. An unprotected Kubernetes console belonging to the automaker exposed access credentials for Tesla's Amazon Web Services (AWS) environment, which was then exploited to mine cryptocurrency.
+
+On Tuesday, RedLock's latest Cloud Security Trends report, based on the findings of the RedLock Cloud Security Intelligence (CSI) team, has highlighted this emerging trend.
+
+The team suggests that up to 25 percent of organizations have experienced cryptojacking activity within their cloud environments in 2018, in comparison to only eight percent last quarter.
+
+"One possible explanation for this is the ransomware market is becoming saturated and overpriced, and hackers are setting their sights on new revenue streams," the report says. "Another reason cryptojacking continues to proliferate is that attackers are using advanced evasion techniques when mining cryptocurrencies."
+
+There are a number of attack vectors which makes cryptojacking possible. In order to exploit cloud environments, threat actors must have a conduit, and this can be in the form of insecure databases.
+
+According to the report, corporations are doing a better job of protecting their databases, but there is still a vast amount of room for improvement. In total, the researchers claim that up to 49 percent of databases in the cloud are not encrypted, but this is a rapid reduction from an estimated 82 percent in 2017.
+
+RedLock says that almost half of organizations -- 43 percent -- also do not rotate their access keys frequently, and on average, over half -- 51 percent -- of enterprise players publicly expose at least one cloud storage device.
+
+Businesses that do not employ stringent patch processes are also leaving themselves open to attack. The researchers suggest that 24 percent of organizations account for hosts which are missing high-severity vulnerability patches in public cloud environments.
+
+In addition, RedLock researchers uncovered a new attack vector relating to enterprise public cloud environments caused by public cloud instance metadata APIs.
+
+These APIs are used to manage and configure cloud instances, but in attack scenarios, threat actors can query an API to obtain an instance's metadata. When unsecured, cyberattackers are able to obtain access credentials to public cloud environments through this technique.
+
+See also: This malware is harvesting saved credentials in Chrome, Firefox browsers
+
+"We understand why there might be fatigue with endless reports on IT infrastructures that lack adequate security, and there are signs that corporations are stepping up initiatives to minimize vulnerabilities, but there's definitely more to do," said Gaurav Kumar, CTO of RedLock. "That's why this report not only shines a light on emerging dangers but also offers concrete advice on how best to ward off attacks."
+
+"Cloud computing environments bring tremendous flexibility and great economies of scale, but those advantages are meaningless without top-level security," the executive added. "This is a constant and shared responsibility."
+
+
+
+
+
+
+
+======================
+
+
+
+
+
+
+
+
+Tesla’s
+ cloud system was hijacked by hackers who used it to mine cryptocurrency, according to researchers.
+
+Hackers were able to infiltrate the automaker’s Kubernetes administration console because it was not password protected, cybersecurity firm RedLock said Tuesday. Kubernetes is a Google-designed system aimed at optimizing cloud applications.
+
+This left access credentials for Tesla’s Amazon
+ Web Services (AWS) account exposed, and hackers deployed cryptocurrency mining software called Stratum to mine cryptocurrency using the cloud’s computing power.
+
+Cryptocurrency mining is a process whereby so-called miners solve complex mathematical problems to validate a transaction and add it to the underlying network.
+
+RedLock did not specify which cryptocurrency was mined in the cyber breach.
+
+Other major firms, including British insurer Aviva
+ and Dutch SIM-maker Gemalto
+, were affected by similar problems, RedLock said. But the incident affecting Tesla’s cloud system was more sophisticated, and used a number of different strategies to hide the hackers from being detected.
+
+RedLock said that it notified Tesla of the cyber exposure and that it was swiftly rectified.
+
+Tesla said that it did not see any initial impact on customer data protection or the safety and security of its vehicles.
+
+“We maintain a bug bounty program to encourage this type of research, and we addressed this vulnerability within hours of learning about it,” a spokesperson for Tesla said in an emailed statement.
+
+“The impact seems to be limited to internally-used engineering test cars only, and our initial investigation found no indication that customer privacy or vehicle safety or security was compromised in any way.”
+
+RedLock CTO Gaurav Kumar said businesses should monitor suspicious cyber activities to avoid being compromised.
+
+“The message from this research is loud and clear — the unmistakable potential of cloud environments is seriously compromised by sophisticated hackers identifying easy-to-exploit vulnerabilities,” Kumar said in a statement Tuesday.
+
+“In our analysis, cloud service providers such as Amazon, Microsoft and Google are trying to do their part, and none of the major breaches in 2017 was caused by their negligence.”
+
+He added: “However, security is a shared responsibility. Organizations of every stripe are fundamentally obliged to monitor their infrastructures for risky configurations, anomalous user activities, suspicious network traffic, and host vulnerabilities. Without that, anything the providers do will never be enough.”
+
+What is ‘cryptojacking’?
+This incident marks another case of what is known in the cryptocurrency world as “cryptojacking.”
+
+Cryptojacking is a process whereby hackers deploy software that exploits a computer’s CPU (central processing unit) to mine cryptocurrency.
+
+Earlier this month, it was revealed that hackers had deployed an altered version of the popular plugin Browsealoud to a number of government websites in the U.K., the U.S. and Australia.
+
+This version of Browsealoud infected the government websites with Coinhive code, which is used to generate units of privacy-focused cryptocurrency monero.
+
+U.S. online news outlet Salon is even asking visitors to its site who use ad blocking plugins if it can use their computing power to mine monero instead.
+
+
+
+
+
+
+=============
+
+
+
+
+
+One of the biggest cyber security trends of 2018 is cryptojacking, where cyber criminals surreptitiously run coinminers on victims’ devices without their knowledge and use their Central Processing Unit (CPU) power to mine cryptocurrencies.
+
+This has been such a big trend this year that we have published a research paper on this topic, which you can read here, featuring insights and analysis about this cyber security threat.
+
+Cryptojacking surged in the last quarter of 2017, with its growth in popularity coinciding with a surge in the value of cryptocurrencies, including Monero, which is what is mainly mined by CPU miners.
+
+Key points in our research include:
+
+The greatest surge in activity was in the area of browser-based coinminers.
+Cryptojacking activity peaked in December 2017, with more than 8 million cryptojacking events blocked by Symantec. We have seen a slight fall in activity in 2018, but cryptojacking events blocked in July 2018 still totaled just less than 5 million.
+Primary effects of cryptojacking include: device slowdown; overheating batteries; increased energy consumption; devices becoming unusable; and reduction in productivity.
+Cryptojacking in the cloud could also cause additional costs for businesses that are billed based on CPU usage.
+
+"Cryptojacking activity peaked in December 2017, with more than 8 million cryptojacking events blocked by Symantec https://symc.ly/2xFGYH4"
+CLICK TO TWEET
+What is cryptojacking?
+Computer programs called coinminers are used to mine cryptocurrencies. Cryptocurrencies are digital currencies created using computer programs and computing power. Bitcoin is the best-known cryptocurrency, but it cannot be mined using personal computers—it requires specialist equipment to mine.
+
+The cryptocurrency we primarily see mined on personal computers is Monero.
+
+File-based coin mining involves downloading and running an executable file on your computer.
+Browser-based coin mining takes place inside a web browser and is implemented using scripting languages. If a web page has a coin-mining script injected on it, the web page visitors’ computing power will be used to mine for cryptocurrency for as long as they keep the web page open.
+Coin mining is not illegal, and many people choose to run files or scripts on their computers to carry out coin mining to make money themselves. Some websites may also use coin mining as an alternative to advertising to generate revenue, which is fine provided customers are told that their CPU power will be used to mine cryptocurrency while they are visiting that website.
+
+The problems arise when people aren’t aware their computers are being used to mine cryptocurrency, or if cyber criminals surreptitiously install coinminers on victims’ computers or Internet of Things (IoT) devices without their knowledge—this is cryptojacking.
+
+What’s the big deal?
+The primary impact of cryptojacking is performance-related, though it can also increase costs for the individuals and businesses affected. Potential impacts for device owners include:
+
+A slowdown in device performance
+Overheating batteries
+Devices becoming unusable
+Reduction in productivity
+Increased costs due to increased electricity usage, and for businesses operating in the cloud that are billed based on CPU usage
+Unlike threats like ransomware, which immediately disrupt victims’ access to their devices, cryptojacking could be quietly carried out on a victim’s device for a long time before they realize what is happening.
+
+How big an issue is cryptojacking?
+The surge in cryptojacking in the last quarter of 2017 was dramatic. It hit its peak in December 2017 when Symantec technologies blocked more than 8 million cryptojacking events. We have seen activity decrease somewhat since then, but in July 2018 we still saw just less than 5 million cryptojacking events blocked, and the growth in activity since September 2017 is stark.
+
+Figure 1. All cryptojacking events blocked by Symantec from January 2017 to July 2018
+Figure 1. All cryptojacking events blocked by Symantec from January 2017 to July 2018
+Reasons cryptojacking activity increased include:
+
+A surge in the value of cryptocurrencies in the final quarter of 2017
+Lower barriers to entry for cyber criminals
+Cryptojacking allows cyber criminals to operate without the activity being noticed by victims
+Even fully-patched devices can be targeted via browser-based coinminers
+The steep increase in the value of cryptocurrencies was another key reason cryptojacking activity surged.
+
+The lower barrier to entry was primarily thanks to the Coinhive service, which was launched in September 2017, just before cryptojacking activity increased dramatically. Coinhive, which is a script that mines Monero, was marketed as an alternative to ads for websites seeking to generate revenue. It recommends that its users are transparent with site visitors about its presence, but this hasn’t stopped unscrupulous operators from using it to carry out cryptojacking with the hope that site visitors won’t notice. Since its launch there have been many reports of it being used for cryptojacking without site visitors’ knowledge.
+
+Along with the arrival of Coinhive, the steep increase in the value of cryptocurrencies was another key reason cryptojacking activity surged. At its peak in December 2017 and January 2018, Monero reached values of close to US$500 per coin. It’s hard to know how much money cyber criminals are making from cryptojacking, but the key to making money in this area is scale. A coinminer running on one computer won’t make much money—but a coinminer running on thousands of computers could potentially mine a lot of cryptocurrency.
+
+Figure 2. A cyber criminal with a botnet of 100,000 devices mining cryptocurrencies could make a nice profit in just 30 days
+Figure 2. A cyber criminal with a botnet of 100,000 devices mining cryptocurrencies could make a nice profit in just 30 days
+What’s the future for cryptojacking?
+The future of cryptojacking is something we consider in the whitepaper, and which we also speculated about in ISTR 23. We said then that “the longevity of this activity very much depends on the future value of these cryptocurrencies.” 2018 has seen a drop in cryptojacking activity compared to the final quarter of 2017 but, despite some fluctuations in cryptocurrency values, activity in this area remains significant and it is still one of the primary threats on the cyber security landscape as we enter the final months of 2018.
+
+While we may not see the mass adoption of cryptojacking that occurred at the end of 2017, once cyber criminals are still making money from cryptojacking it will remain a headache for consumers and businesses for some time to come.
+
+Read more of our thoughts on the future of cryptojacking, as well as case studies, and more in-depth analysis of the cryptojacking landscape in our whitepaper on the topic.
+
+
+
+
+
+============
+
+
+
+
+The concept of cryptojacking is pretty simple: An attacker finds a way to harness the processing power of computers she doesn't own—or pay the electric bills on—to mine cryptocurrency for herself. Malicious mining malware has lurked for a while, but attackers didn't realize its full potential until a group called Coinhive created a simple mining module in September 2017 that could embed in virtually any website.
+
+Once it's there, anyone who goes to the page will contribute CPU cycles to mining for the module's owner for however long they have the tab open. Coinhive has said that it intended for the tool to provide an alternate revenue stream for websites, but criminals quickly realized that they could find and exploit vulnerabilities in all sorts of highly trafficked sites to quietly implant their own cryptojacking modules.
+
+"Cryptojacking had a 35 percent share of all web threats, and that is honestly absolutely insane."
+
+TYLER MOFFITT, WEBROOT
+
+With cryptocurrency hitting all-time highs in late 2017 and early 2018, the cryptojacking's popularity exploded. And it has since evolved and matured in all sorts of fascinating and alarming ways. Malicious miners have shown up on mobile devices, in cloud infrastructure, on Internet of Things gadgets, and even in critical infrastructure. And while donating a little bit of processing power to mining sometimes takes little toll on a victim, more aggressive miners can interfere with affected device processes, disrupt work, and even wear on them to the point of physical damage.
+
+"When we did our midyear threat report for 2018 we found that cryptojacking had a 35 percent share of all web threats and that is honestly absolutely insane," says Tyler Moffitt, senior threat researcher at the security firm Webroot. "This is a new threat that just came out in late September 2017. Even if it drops down to 25 percent by the end of the year, it's still clearly a force to be reckoned with."
+
+Cryptojacking attacks tend to ebb and flow with cryptocurrency values. But while the initial cryptojacking gold rush has subsided somewhat, hackers can still make money off of cryptojacking because there's such minimal overhead to run the campaigns. It can even be productive for hackers to simply establish malicious mining infrastructure in target websites or systems without actually running it, so they're ready to act when the value of cryptocurrencies goes up.
+
+Plus, there's pretty much always some money to be made if you're mining off of powerful resources like cloud servers. "With the price of cryptocurrency decreasing we saw this kind of fade a bit, but it didn’t mean cryptojacking itself disappeared. It really matured," says Jérôme Segura, lead malware intelligence analyst at the network defense firm Malwarebytes. "The danger is if you have a cryptominer running in critical infrastructure where computers are used for specific tasks and to schedule tasks it could potentially create instability and crashes and that in turn could affect service."
+
+At the beginning of 2018, the critical infrastructure security firm Radiflow said that it had found mining malware in a European water utility's operational technology network, used for monitoring and industrial control. Malicious miners have also targeted cloud infrastructure for its extensive raw processing power, which can similarly threaten uptime of vital services. For example, the cloud monitoring and defense firm RedLock said in February that Tesla's Amazon Web Services cloud infrastructure was running mining malware thanks to an inconspicuous, but extensive cryptojacking campaign.
+
+TRENDING NOW
+
+
+What is Ransomware and How Do You Deal With It?
+
+MOST POPULAR
+Large Language Models’ Emergent Abilities Are a Mirage
+SCIENCE
+Large Language Models’ Emergent Abilities Are a Mirage
+STEPHEN ORNES
+
+A Deepfake Nude Generator Reveals a Chilling Look at Its Victims
+BUSINESS
+A Deepfake Nude Generator Reveals a Chilling Look at Its Victims
+CAROLINE HASKINS
+
+Hackers Found a Way to Open Any of 3 Million Hotel Keycard Locks in Seconds
+SECURITY
+Hackers Found a Way to Open Any of 3 Million Hotel Keycard Locks in Seconds
+ANDY GREENBERG
+
+Here Comes the Flood of Plug-In Hybrids
+GEAR
+Here Comes the Flood of Plug-In Hybrids
+AARIAN MARSHALL
+
+Browsers and malware scanners have steadily improved their defenses against cryptojacking, but the technique has evolved to counter these protections. As with other types of attacks, hackers may even eventually start obfuscating their mining code if enough defense systems are catching it out in the open. Cryptojacking has also proliferated by exploiting insecure and often unmonitored Internet of Things Devices. Cryptojacking works on all sorts of IoT devices—there are even proofs of concept that miners can run on Xbox and PlayStation consoles.
+
+In August, the security firm TrustWave disclosed a massive cryptojacking campaign it had discovered in routers from the Latvian manufacturer MikroTik. The attack exploited a flaw to infect an initial 72,000 routers in Brazil, and then spread to more than 200,000 vulnerable units. MikroTik had patched the bug in April, but many devices didn't receive the update, a common problem in IoT security.
+
+"It's a brilliant idea," Malwarebytes' Segura says. "By injecting the router with a crypojacking script you’re compromising any device that’s behind that router that connects to it to access the internet. Every single website the victim visits on every device on the Wi-Fi is hijacked, because it's happening at the router level. So there’s a scalability that really makes sense for an attacker. If they compromise a router at a school or library they can have hundreds of machines behind it."
+
+Image may contain Number Text and Symbol
+Want more? Read all of WIRED’s year-end coverage
+Even though cryptojacking schemes have gotten more sophisticated, attackers are still going back to their roots, hijacking high-profile websites when the opportunity presents itself. Just last month, cryptojackers injected the Make-A-Wish Foundation website through its content management system, a type of web framework that hackers frequently target with cryptojacking scripts. And cryptojackers have learned to append cryptojacking onto lots of classic web attacks—adding malicious miners to phishing websites or bundling them into other malware downloads.
+
+The crucial thing about cryptojacking is that it's so easy to pull off relative to other types of attacks. "It just doesn’t cost attackers anything," Webroot's Moffitt says. "So it’s always going to be profitable."
+
+In that way, cryptojacking appeals to attackers whether they're looking to make a quick buck or playing a long game. And with so much potential left, it isn't going away anytime soon.
+
+
+
+
+
+
+==================
+
+
+
+
+
+
+
+Disruptive technologies, like blockchain, usher in new market opportunities, like cryptomining.  Whenever there is a growing trend, with the potential for financial gain, cyber criminals will invariably find ways to disrupt and distort these markets.
+Cryptomining is highly compute-intensive, using computer resources, such as CPU cycles, to mine “cryptocurrency”. Miners are paid for solving CPU intensive cryptographic challenges that validate each block of a transaction added to a cryptocurrency’s blockchain. They are paid a certain amount of cryptocurrency into their cryptocurrency wallet as commission for validating a transaction. .
+
+Anywhere there is a profit to be made, capable people will take advantage, and cryptocurrency is no exception. In 2017, there were numerous ransomware campaigns that attacked systems by encrypting files and withholding the key code in exchange for ransom. With the rise in cryptocurrency market rates, we are seeing more cryptomining malware, or cryptojacking attacks in 2018. Cryptojacking is the process of taking over an unsuspecting user’s computer resources, and mining for cryptocurrency- without the user’s explicit permission.
+
+A new Versa Networks report “Top 10 Cryptomining Malware for 2018”, examines cryptomining and its underlying technology, blockchain.  In this article, we will share the results which reveal the many ways malware is infesting this market.
+
+Cryptomining Malware
+Even after the havoc created by the Wannacry ransomware, many devices still remain unpatched, and vulnerable to exploitation. As seen by the report, the mining of cryptocurrency continued to grow rapidly in 2018, as did the amount of cryptojacking attacks. Cryptojacking campaigns indicate that attackers are targeting a wide range of computational resources, from large data centers, to mobile and IoT devices. Virtually any device that can provide CPU cycles is vulnerable.
+
+Distribution Mechanisms and Evasion Techniques
+Cyber attackers are exploiting cryptomining through various methods. There are many different types of cryptomining malware that drop the mining software as the payload. These payloads are dropped into the victim’s machine and executed to utilize their CPU cycles to mine and fill the attacker’s wallets.
+
+Certain malware samples were seen to incorporate a primary payload for propagation and the mining software as a secondary payload. This allows the attackers to use the miner’s machines to spread the software, along with other infections. The general techniques use known vulnerabilities to deliver the miner payload to servers, using powershell or shell scripts embedded in documents to download miners, or perform lateral movements to spread the infection throughout a network.
+
+Browser-based Attacks
+One of the methods implemented on a wide-scale is browser-based mining, using the Coinhive API. The technology, as such, is not malicious. However, running it without the user’s knowledge and permission, makes it malicious. Coinhive API allows sites to make money, by running the mining scripts on a website, rather than relying on paid advertisements. However, many websites have switched to mining without informing their users. This practice is also exploited by attackers in compromised websites, where even the website owner is unaware of the script running and draining the resources on the devices visiting their website.
+
+Web-Based Cryptomining
+Monero, uses CryptoNight as the underlying mining algorithm, which later gave way to porting the algorithm to a Javascript. This allows the algorithm to be used on a PC with a browser that supports javascript, rather than requiring ASICs to run efficiently. However, this also makes it easy for attackers to deploy these miners.
+
+Traditional miners must be dropped inconspicuously in a victim’s machine and use persistence techniques to support a long session. Web-based mining only requires attackers to inject their code into a website. And when a victim visits the website, their CPU cycles are robbed to mine currencies for the attacker’s wallet. The drawback with web-based mining is that it’s inefficient compared to a miner executable, and because it only runs when the page containing the mining script is open within the browser.
+
+The WebAssembly (Wasm) solves this to an extent. It is a binary instruction format for stack-based virtual machines. This works as a target for high-level languages like C/C++ to be deployed on web-based client/server applications. It also aims to achieve native speed execution, making it an appealing solution for implementing the miner code.
+
+Cryptomining malware distribution has become more frequent with the increase in cryptocurrency value. Easy availability of a browser-based miner that doesn’t require attackers to inject miner executables into a system has also contributed to the increase of this malware, as attackers only need to redirect victims to the infected websites.
+
+Below is a summary of malware campaigns and their targeted cryptominers in 2018.
+
+wannamine
+Another cryptomining malware, Wannamine, uses a similar technique that Wannacry uses on the Server Message Block (SMB) vulnerability, that is still prevalent. SMB is the transport protocol used by Windows machines for file and printer sharing, and access to remote Windows services. Wannamine takes advantage of a flaw in the SMB protocol that lead to the infamous EternalBlue exploit used by malware like WannaCry and WannaMine. After a successful exploitation, one component of the attack ensures persistence, download of more malware and another scan for more machines to propagate to within the network.
+
+Wannamine mines Monero currency, usually infecting systems through phishing emails or downloads from compromised websites. Wannamine malware infects systems using Windows Management Instrumentation (WMI) or Powershell. It then runs Mimikatz, an open-source post-exploitation tool, to get login details from other systems on the network. Wannamine also attempts to infect other devices in the network through the SMB vulnerability that allowed the spread of Wannacry.
+
+Upon analysis, using samples of the Wannamine malware, the report found the files in the initial stage of infection were large ascii text files. They included large strings obfuscated with various techniques, including base64 encoding. These strings were Powershell scripts, which on de-obfuscation, exposed commands that used WMI, and contained the executable of the Monero Miner, as well as the Mimikatz tool.
+
+mirus
+MIRUS is a typical file infector, but reportedly, it can also inject cryptomining scripts. One of its functions is to infect specific system files with a virus, by prepending malicious code to it. It also searches for html and htm files to inject a javascript for calling the Coinhive miner. When these html files are opened, the javascript executes to connect to the Coinhive. The coinhive.min.js script in it uses the CPU cycles to mine and collect the currency in the wallet specified in the script.
+
+ghostminer
+Fileless malware uses the evasion technique that allows malicious software to reside within computer memory. GhostMiner, a Monero cryptominer, was first seen in March 2018, and exhibits fileless evasion. This miner malware achieves this through Powershell Evasion frameworks, like Out-Compressed DLL and Invoke-Reflective PE Injection. According to the report, when the GhostMiner malware was discovered, the account wallet that was linked to the campaign only collected 1.03 XMR. Even though the miner only mined a small amount, the techniques used by the malware were advanced in trying to achieve fileless execution.
+
+fake flash updates
+Fake Flash Updates are used to distribute cryptominer executables, and they are among the more recent cryptojacking campaigns. This was reported in an earlier blog which contains details of samples analyzed and the Indicators of Compromise (IoC).. Though there were many previous attempts to hide different malware in Flash updates, this particular case stood out. It had legitimate looking Adobe popups for installation, along with updating Flash player to the latest version. These smokescreens easily lull the unsuspecting user.
+
+xbash
+Xbash is a recently discovered malware family that targets Linux and Windows servers. The report findings show it was developed from Python code, and combines ransomware, mining, and botnet, as well as self-propagation techniques. Xbash scripts contain commands to kill a list of processes, like rivaling cryptominers, using specific ports, and removing the related files.
+
+coinhive
+Coinhive is a web-based cryptominer that uses javascript to perform mining operations. Javascript- invoking miners can be placed on websites, and when a browser visits the website, Coinhive utilizes the user’s system CPU to perform mining. Of the total earnings mined, 30 percent goes to Coinhive, and the rest is received by the wallet specified in the script.
+
+Pirate Bay initially experimented using Coinhive to mine, instead of monetizing through advertisements. Some charity websites also host it, but with disclosure of using CPU for mining. Coinhive scripts were also seen in Google’s DoubleClick. The affected page showed the miner script, along with the script to display the actual advertisement. Many streaming sites also host these miner scripts, as users spend a long time on such sites.
+
+cryptoloot
+Cryptoloot is similar to Coinhive. However, Cryptoloot only keeps 12 percent of the mined coins, and gives the rest to the website owners, compared to Coinhive’s 30 percent take. Cryptoloot advertises itself as stealthy and un-intrusive. It uses crypto-loot.com and cryptoloot.pro as domains for its operations. According to Checkpoint, Cryptoloot is among the top cryptomining threats, after Coinhive.
+
+Some of the major campaigns within web-based mining include capitalizing on the vulnerabilities in CMS websites to host the script, by using obfuscated shortlinks of the Coinhive miner. Another major attack in the campaign involves unpatched Mikro Tik routers that are compromised to push pages with miner scripts. In this case, all the browsers behind the infected router will begin to mine, as the attack causes the router to push miner script into them.
+
+shortlink coinhive url
+A campaign using a shortlink of the Coinhive URL was reported. Coinhive provides an option to allow website owners to include the shortlink to mine, exploiting the CPU of unsuspecting users when forwarding to another site.
+
+This was misused by injecting the shortlink into an iframe size of 1×1, which is easily missed by a normal user when a miner is running in the background. The shortlink, by nature, does not show the details of the exact page it is going to, until the browser loads it, and so it can easily misdirect users to click it, allowing malicious sites to be loaded. Researchers went on to find a larger operation which not only catered to drive-by mining, but also directed users to fake download pages that dropped miner executables in Linux or Windows.
+
+mikro tik routers
+A cryptomining campaign involving the Mikro Tik routers was discovered at the end of July 2018. The initial infection was reported across Brazil, and later spread to many other parts of the world. The exploit is based on a Winbox vulnerability that was disclosed and patched by the Mikro Tik routers. But many router administrators failed to apply this patch in a timely manner, which led to a significant attack. When a user under the infected router tries to access http sites, the router returns a custom 403 error page that hides a script within it. The script runs the miner in the browser. It also loads the original website in an iframe while the miner continues to run in the background. Unsuspecting users won’t detect a problem and will continue browsing.
+
+Cryptomining Malware Prevention
+The various campaigns described here display different techniques used by attackers to evade detection and achieve unscrupulous mining. To thwart these attacks, enterprises must employ proper security practices and technology, and execute timely patches and updates, to stay ahead of the attackers.
+
+Versa Networks security platform detects the scripts and executables related to these attacks, and prevents downloading of the infected components, thus protecting the systems from unwanted miners.
+
+To learn more about how Versa can help protect your organization from malware request a demo: https://www.versa-networks.com/request-a-demo/
+
+
+
+
+
+
+
+=========
+
+
+
+
+
+When the ShadowBrokers first published the code for EternalBlue — an NSA exploit targeting Windows’ file-sharing protocol — researchers knew it was a bad bug. But most had no idea of the scale of the damage that would be caused by the vulnerability.
+
+Much of that damage has only become visible in recent days, as a ransomware program dubbed “WannaCry” locked up computers from the UK’s National Health Service to the Russian Ministry of the Interior. Some of the damage caused by EternalBlue was harder to spot, caused by more discreet malware designed to infect and monetize computers without leaving a trace. As researchers look for clues as to WannaCry’s origins, more of those programs are coming to light, and giving us more information about the sheer scale of the damage caused by Eternal Blue.
+
+A $43,000 cryptocurrency scheme
+
+One of those programs, called Adylkuzz, exploits the vulnerability to mine an obscure cryptocurrency called Monero. According to research released this week by Proofpoint, Adylkuzz became active sometime between April 24th and May 2nd, weeks before WannaCry burst onto the scene. Researchers estimate it reached hundreds of thousands of devices, spreading through the same Windows vulnerability exploited by WannaCry.
+
+Adylkuzz didn’t cause the same stir because it wasn’t shutting down computers or sending ransom notes — all the program did was perform Monero’s mining operation in the background. While that’s definitely not good for your computer, it’s not catastrophic enough to raise alarms, allowing the program to remain undetected until the WannaCry fiasco drew more attention. In fact, because Adylkuzz closed the EternalBlue vulnerability once it infected a machine, researchers suspect the program actually limited the spread of the more damaging ransomware.
+
+Despite the low profile, Adylkuzz was nearly as profitable as WannaCry. Proofpoint identified at least $43,000 paid out as part of the scheme, and it’s likely other wallets would raise the figure even further. So far, roughly $80,000 has been paid out to known WannaCry wallets, a surprisingly low figure given the chaos caused by the attacks. At least one other EternalBlue-powered cryptocurrency miner has been spotted in the wild, and there may be others that are yet undiscovered.
+
+“WannaCry burned the match for EternalBlue.”
+
+There has also been an explosion of WannaCry variants, possibly the work of copycats. Researchers located a kill-switch domain over the weekend that blocked the initial attack, but in the days since, a handful of alternate versions of the ransomware have popped up either pointing to new domains or with no kill-switch protocol at all. But researchers are split on the origin of the variants, with some pointing to code corruption issues as evidence of a third party at work.
+
+Earlier today, researchers at TrendMicro announced the discovery of an entirely new variant called UIWIX. Like WannaCry, it’s a ransomware program built on EternalBlue — but UIWIX is able to infect machines without writing files to permanent storage, making it far harder to detect through conventional forensics. It also adds new methods to throw off researchers observing it in a virtual environment, leading TrendMicro to suspect a separate group is responsible for the new attack.
+
+That combination of new and old variants make it harder to definitively say who was responsible for the initial WannaCry infections, as it grows increasingly likely that multiple actors are in play. The question has become particularly urgent after Symantec and Kaspersky announced evidence tying the initial attack to a previously researched North Korean cybercrime group.
+
+The good news: patching the single vulnerability will protect against all the different variants, particularly now that Microsoft has released its emergency XP patch. As a result, some researchers see WannaCry’s sudden fame as a powerful weapon against the lesser-known bugs. “I think that WannaCry caused a few cybercriminals to accelerate their timelines,” said Trend Micro cloud research VP Mark Ninnukhoven. “WannaCry burned the match for EternalBlue. For defenders this is a really good thing as WannaCry — which did cause some real-world damage and has frustrated organizations worldwide — wasn’t nearly as malicious as other malware and ransomware that we’ve seen previously.”
+
+
+
+
+===================
+
+
+Security firm TrendMicro stated in a new report that Google's DoubleClick ad services were used to distribute cryptocurrency mining malware to a number of users in Europe and Asia.
+
+On its Security and Intelligence Blog, the company outlined how CoinHive – a JavaScript program that works in the background of a website and uses a computer's processing power to mine monero – was distributed by attackers who appropriated Google's DoubleClick. Significantly, miners like CoinHive operate without a user's consent or knowledge.
+
+Google's DoubleClick ad services are also used by YouTube, the world's most popular video sharing service, and the miner impacted a number of users on the site, according to ArsTechnica.
+
+A "separate web miner that connects to a private pool" was also involved in the scheme, according to TrendMicro's report.
+
+The "malvertisement" incorporated two different web miner scripts in addition to the actual advertisement, according to the report.
+
+It continued:
+
+As much as 80 percent of an affected computer's processing power can be taken over when exposed, reducing the machine's performance, according to the report.
+
+Clandestine cryptocurrency mining has been on the rise in recent months, as previously reported. Companies such as oil pipeline giant Transneft have seen their systems affected by the malware, and a report from November suggested that CoinHive has become one of the more common pieces of malware in circulation today.
+
+Malware image via Shutterstock
+
+Disclosure
+
+Please note that our privacy policy, terms of use, cookies, and do not sell my personal information has been updated.CoinDesk is an award-winning media outlet that covers the cryptocurrency industry. Its journalists abide by a strict set of editorial policies. In November 2023, CoinDesk was acquired by the Bullish group, owner of Bullish, a regulated, digital assets exchange. The Bullish group is majority-owned by Block.one; both companies have interests in a variety of blockchain and digital asset businesses and significant holdings of digital assets, including bitcoin. CoinDesk operates as an independent subsidiary with an editorial committee to protect journalistic independence. CoinDesk employees, including journalists, may receive options in the Bullish group as part of their compensation.
+
+
+
+Learn more about Consensus 2024, CoinDesk's longest-running and most influential event that brings together all sides of crypto, blockchain and Web3. Head to consensus.coindesk.com to register and buy your pass now.

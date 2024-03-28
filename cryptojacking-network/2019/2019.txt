@@ -1,0 +1,339 @@
+Weeding out WannaMine v4.0: Analyzing and Remediating This Mineware Nightmare
+
+Although the world of mineware is not new to the security industry, it continues to grow as adversaries develop new capabilities to compromise systems and turn them into bots used for mining cryptocurrency. In this blog, we hope to provide some deeper insight into the world of mineware. We will discuss in-depth one of the most notorious mineware malware variants out there, “WannaMine.”  Our deep dive will analyze the latest WannaMine variant currently being used in the wild, dubbed “WannaMine v4.0,” and outline how you can successfully identify and remediate a WannaMine v4.0 infected host. Cryptojacking and WannaMine In essence, cryptojacking is the unauthorized use of a computing device to mine cryptocurrency. It occurs when adversaries compromise an organization’s systems and use their resources to mine cryptocurrency, freeing them from having to purchase hardware and electricity (more detailed information can be found in previous blogs on cryptomining and cryptojacking). Many times, this malicious mining occurs without the victim ever realizing it due to a lack of security monitoring.  As adversaries and cybercriminals searched for better ways to compromise hosts en masse, the creation of a malware dubbed “WannaMine” was born. WannaMine is a mineware malware variant created for the sole purpose of installing and running Monero software on a victim’s system and using its processing power to mine Monero for the adversary. WannaMine plays on the naming convention used for the notorious ransomware mentioned at the beginning of the article, WannaCry. This is likely because WannaMine leverages WannaCry’s exploitation code, “EternalBlue,” to compromise hosts and propagate the Monero mining software.
+
+WannaMine v4.0 Analysis and Remediation Overview 
+
+Like its predecessors, WannaMine v4.0 leverages the EternalBlue exploit to spread and compromise vulnerable hosts. Its design is similar to WannaMine v3.0 in that it stores the EternalBlue exploit binaries in a directory located in C:\Windows; however, the directory in version 4.0 has been renamed “NetworkDistribution.” Instead of leveraging a single hard-coded service name like WannaMine v3.0, version 4.0 will randomly generate a .dll and service name based on a list of hard-coded strings. It does this in order to maintain persistence on the host. We will start with a quick high-level overview of the remediation steps that are needed, and then follow with a more detailed step-by-step walk-through. The remediation of WannaMine v4.0 can be broken into the following three steps:
+
+Killing the malicious processes (newly spawned or injected) Locating and removing the persistence mechanism (e.g., service) Removing artifacts (e.g., NetworkDistribution).
+
+The following offers details on each step: WannaMine v4.0 Step-by-Step Remediation Note: there are 2 scenarios. Pre-infection (CrowdStrike Falcon®® is already installed and preventions are on) and post-infection detections where Falcon has been installed on the client’s endpoints after infection, therefore blocking it.  In some of the examples shown below we have turned on DETECTIONS ONLY and PREVENTIONS off for illustrative purposes. STEP 1. Killing the Malicious svchost.exe and dllhostex.exe Processes As you can see in Figure 1 and 2. , Falcon will immediately block the launch of WannaMine’s main XMRig mining module (dllhostex.exe) and then quarantine the binary. Since the process has been killed and the binary removed, we must find the svchost.exe process that is being used to run the malicious service and kill it.  Using Falcon’s process explorer, you can see that the parent process of dllhostex.exe is svchost.exe.
+
+Figure 1. Process execution tree indicating svchost.exe as the parent process of dllhostex.exe
+
+Figure 2. Further detail of specific process information within the UIBy looking over the process details within Falcon, we can quickly grab the process ID associated with the svchost.exe that is running the malicious WannaMine DLL.
+
+Figure 3-4. Process execution tree provides process ID information
+
+From there, we can query that specific svchost.exe process, via the process ID obtained from the Falcon UI, in order to gather the service group name being used for the malicious service, in this case the netsvcs service group.
+
+Figure 5. PowerShell query to output svchost service group name. Note: This must be run within the “EDIT & RUN SCRIPTS” tab
+
+Note: Depending on whether the SVCHOST is grouped (Microsoft refactored the way SVCHOST groups services in Windows 10 1703; read about that here) or if it is a single process, the removal process will vary. Windows 10, by default, will spawn an individual SVCHOST process per module but Windows 7 will group. Killing the grouped PID is not an option here as we want to minimize downtime for the clients we work with. Review Appendix A.3 for further insight into this grouping. To be more specific, we can actually query the SVCHOST process using “tasklist” to output the service name associated with it, which happens to be the exact name of the malicious WannaMine DLL.
+
+Figure 6. Tasklist output to display associated service name. Note: This must be run within the “EDIT & RUN SCRIPTS” tab.
+
+As an extra step, you can also query the registry key that SVCHOST based on the service group name of “netsvcs” found in the image above. From the output below, we can see the “MicrosoftNetBIOSManager” DLL module that was added to the netsvcs service group. This has the same name we found previously, using the commands above.
+
+Figure 7. Registry query output showing newly added malicious dll module name
+
+Based on that information we can pivot and check the registry key where Windows services are stored to see if we find an associated service named “MicrosoftNetBIOSManager.” As expected, we see that there is such an entry. Looking at the values stored within the Parameters key we find the exact path to the malicious .dll:
+
+Figure 8. Registry query command to output path location to .dll on disk
+
+Figure 9. Output of registry query command showing path location to the malicious .dllTo confirm that this is the malicious DLL we are looking for, we can calculate the hash for the binary
+
+Figure 10. Built-in RTR command to gather filehash information.
+
+Figure 11. Output of the filehash command for the malicious .dll
+
+Once we have the hash of the DLL, we notice that this has not been seen in VirusTotal, which is abnormal for a legitimate Windows dll stored in the System32 or SysWow64 directories. In our lab environment, we infected a Windows 10 host at a specific date and time. Once infected, we inspected the creation timestamp of the malicious DLL. The time stamp provided was invalid, stating the DLL was created months prior to the initial infection. This indicated timestomping techniques had been used.
+
+Figure 12-13. Shows a creation date that pre-dated the in-lab installation
+
+A clearer indication is seen on a Windows 7 host where the timestomping goes back to 2009. (See A.2 Timestomping Example.)
+
+Figure 14. Another image showing timestomping being used on a Windows 7 host
+
+Reviewing the compiler timestamp for the binary, you can see that it was created recently — in 2019 and not 2009.
+
+Figure 15. Reviewing compiler timestamp information that proves timestomping is in fact being used
+
+Another method to highlight the malicious dll being loaded by SVCHOST comes from outlier analysis (Figure 16.). We see the hard-coded path for MicrosoftNetBIOSManager (Figure 17.) which is odd and adds context to the above indicating this isn’t native to the OS.
+
+Figure 16. Registry query used to show further outlier information indicating the difference between the known legitimate and malicious .dll. Note: This must be run within the “EDIT & RUN SCRIPTS” tab.
+
+An example of the many ServiceDLL fields and what they look like before filtering again on the hard-coded path C:\Windows\System32\ as opposed to %systemroot%.
+
+Figure 17. Output of the registry command indicating the differences
+
+Now that we have confirmed the SVCHOST process is indeed the one associated with the malicious WannaMine service, let’s kill the process. Gracefully stopping the service will end the process.
+
+Figure 18. PowerShell command to stop the malicious service. Note: This must be run within the “EDIT & RUN SCRIPTS” tab.
+
+STEP 2. Removing the Persistence While discovering and killing the svchost.exe process being used to launch the WannaMine service, we found and confirmed the service name being used for persistence. Now we remove the service so WannaMine v4.0 no longer has persistence in place.
+
+Figure 19. Powershell command to remove the service after it has been stopped. Note: This must be run within the “EDIT & RUN SCRIPTS” tab.
+
+Figure 20. Output provided after running the service removal command
+
+Just like that, we have removed the malicious service and relinquished WannaMine v4.0’s persistence! STEP 3. Removing Remaining Artifacts Now that we have killed the SVCHOST process and removed the persistence, it’s time to clean up and remove the remaining artifacts. Based on our research, WannaMine v4.0 has a few specific artifacts that it places on the host. The first one is the NetworkDistribution folder located in C:\Windows. This folder contains all of the Equation Group binaries (e.g., EternalBlue, Double Pulsar, etc.) and needs to be removed.
+
+Figure 21. Depicts the folder named “NetworkDistribution” and some of its contents
+
+Figure 22. Command used to remove the entire directory
+
+The next artifact to remove is the malicious DLL that we discovered in step one. This is located in C:\Windows\System32.
+
+Figure 23. Built-in RTR command used to remove the malicious .dll
+
+Next, we have the dllhostex.exe that is the binary that WannaMine v4.0 uses to run the XMRig miner module. As seen Figure 1, Falcon quarantines this binary; however, if it was not quarantined you can find it in C:\Windows\System32.
+
+Figure 24. Built-in RTR command used to remove the XMRig miner module binary
+
+Lastly, a registry entry that contains the descriptive text for the service.
+
+Figure 25. PowerShell command to remove the remaining registry artifact. Note: This must be run within the “EDIT & RUN SCRIPTS” tab.
+
+Completion Congratulations! If you followed the above steps, you have successfully discovered and remediated the pesky WannaMine v4.0 malware. PowerShell Enumeration Script In an effort to automate the remediation processing, we can leverage the RTR RUNSCRIPT feature of the Falcon agent to easily create and save re-runnable scripts to help identify and triage systems ready for remediation. Using a “query first then kill” methodology, you can confirm a host is infected prior to running any remediation kill scripts. This helps our analysts quickly remediate systems at scale. Remediation RTR Runscript Code
+
+Figure 26. Image of the full PowerShell runscript
+
+RTR Runscript Output Example
+
+Figure 27. Output provided by the PowerShell runscript listing the artifacts found on the host
+
+Figure 28. Output provided by the PowerShell runscript listing the removal commands that you can use to completely remediate WannaMine v4.0
+
+Recommendations
+
+Gain advance visibility across your endpoints with an endpoint detection and response (EDR) solution such as the CrowdStrike® Falcon platform. Turn on next-gen antivirus (NGAV) preventative measures to stop malware.
+
+Keep systems up to date: Patch for MS17-010 to stop EternalBlue exploitation.
+
+Segregate the network where possible to limit lateral movement.
+
+Monitor / filter / block at the network level for known coinminer sites. Detect network scanning. Contain unapproved hosts as fast as you can.
+
+CrowdStrike Solutions and Services CrowdStrike provides a wide range of solutions and services to help you identify and protect your environment from the latest threats. The following is information on some of these solutions and services. CrowdStrike provides the technology and expertise you need to combat today’s advanced threats, including WannaMine v4.0. Falcon Sandbox CrowdStrike Falcon® Sandbox™ performs deep analysis of evasive and unknown threats, enriches the results with threat intelligence, and delivers actionable indicators of compromise (IOCs), enabling your security team to better understand sophisticated malware attacks and strengthen their defenses. Learn more about Falcon Sandbox.    Try it free by visiting this website. Falcon Complete CrowdStrike Falcon Complete™ saves time and resources, and reduces cost by bringing customers to the highest level of endpoint security by combining CrowdStrike’s best protection technologies with the people and processes necessary to provide a total hands-off, turnkey approach to endpoint protection. The CrowdStrike Falcon® Complete Team reduces the time needed to remediate endpoints by providing the skills and expertise required to take proper action. The Team does the remediation for you, eliminating the arduous task of reimaging the endpoints and reducing the risk of a breach. The Falcon Complete Team has been following the numerous iterations of the WannaMine malware and are well-versed in the removal of the latest variant, WannaMine v4. This removal is done by taking a surgical approach and removing the many artifacts that WannaMine scatters on the host, all without having to reimage the system.  For further details regarding CrowdStrike’s Falcon Complete, visit the  Falcon Complete webpage.  CROWDSTRIKE FALCON® INTELLIGENCE  CrowdStrike CROWDSTRIKE FALCON® INTELLIGENCE™ automates the threat analysis process and delivers actionable intelligence and custom IOCs specifically tailored for the threats encountered on your endpoints. With this level of automation, you can stop picking and choosing which threats to analyze and start analyzing all threats. In addition, with CrowdStrike Falcon® Intelligence Premium, you have the ability to escalate malware to a CrowdStrike expert for further research or a second opinion. Learn more about CrowdStrike Falcon® Intelligence threat intelligence by visiting the webpage.  APPENDICES A.1 LATERAL MOVEMENT Please Note: In Figure 29, Falcon is configured to DETECT ONLY. Prevention was disabled to outline the lateral movement. If Falcon was in prevention mode, it would have prevented the post exploitation activity. On patient zero, the injected process, SearchIndexer.exe begins scanning the local subnet for EternalBlue vulnerable hosts.
+
+Figure 29. Process execution information within the Falcon UI indicating network lateral movement
+
+Newly infected victim (Figure 30)  has been found and exploited by EternalBlue. Notice LSASS process dropping out a new persistence SVCHOST service and newly generated dll.
+
+Figure 30. Process execution information within the Falcon UI showing signs of a newly infected victim that was exploited via Eternal Blue
+
+A.2 TIMESTOMPING EXAMPLE Again, timestomping on the dll has occurred — even more notably than previously on our patient zero — to further evade detection, setting it back into 2009.
+
+Figure 31. Runscript output indicating timestomping being used
+
+Figure 32. Native RTR output indicating timestomping being used
+
+ 
+
+Figure 33. Image showing compiler timestamp for the binary
+
+A.3 WINDOWS 7 SVCHOST GROUPING EXAMPLE With a Windows 7 host, the SVCHOST grouping is also important: You should not kill off the PID as this would disrupt the OS and could cause instability with the host.
+
+Figure 34. Image showing numerous services grouped with this specific svchost process
+
+By stopping the service gracefully, we can see it no longer shows under PID 996.
+
+Figure 35. Image showing the malicious service has been removed from the process without killing 
+
+
+
+
+
+
+====================
+
+
+
+
+
+Active since 2017, Smominru has now become one of the most rapidly spreading computer malware, according to a publicly available report. In 2019, during August alone, it infected 90,000 machines worldwide, with an infection rate of up to 4,700 сcomputers per day. China, Taiwan, Russia, Brazil, and the US have seen the most attacks, but that doesn’t mean other countries are out of its scope. For example, the largest network Smominru targeted was in Italy, with 65 hosts infected.
+
+How the Smominru botnet propagates
+The criminals involved are not too particular about their targets, which range from universities to healthcare providers. However one detail is very consistent: About 85% of infections occur on Windows 7 and Windows Server 2008 systems. The rest include Windows Server 2012, Windows XP and Windows Server 2003.
+
+Approximately one-fourth of the affected machines were infected again after Smominru was removed from them. In other words, some victims did clean their systems but ignored the root cause.
+
+That leads to the question: What is the root cause? Well, the botnet uses several methods to propagate, but primarily it infects a system in one of two ways: either by brute-forcing weak credentials for different Windows services, or more commonly by relying on the infamous EternalBlue exploit.
+
+Even though Microsoft patched the vulnerability EternalBlue exploits, which made the WannaCry and NotPetya outbreaks possible, in 2017 even for discontinued systems, many companies are simply ignoring updates.
+
+The Smominru botnet in action
+After compromising the system, Smominru creates a new user, called admin$, with admin privileges on the system and starts to download a whole bunch of malicious payloads. The most obvious objective is to silently use infected computers for mining cryptocurrency (namely, Monero) at the victim’s expense.
+
+However, that’s not it: The malware also downloads a set of modules used for spying, data exfiltration, and credential theft. On top of that, once Smominru gains a foothold, it tries to propagate further within the network to infect as many systems as possible.
+
+An interesting detail: The botnet is fiercely competitive and kills any rivals it finds on the infected computer. In other words, it not only disables and blocks any other malicious activities running on the targeted device, but also prevents further infections by competitors.
+
+Attack infrastructure
+The botnet relies on more than 20 dedicated servers, mostly located in the US, though some are hosted in Malaysia and Bulgaria. Smominru’s attack infrastructure being so widely distributed, complex, and highly flexible makes it unlikely to be taken down easily, so it seems the botnet will be active for quite some time.
+
+How to protect your network, computers, and data from Smominru:
+
+Update operating systems and other software regularly.
+Use strong passwords. A reliable password manager helps you create, manage, and automatically retrieve and enter passwords. That will protect you against brute-force attacks.
+Use a reliable security solution.
+
+
+
+
+
+
+=====================
+
+
+
+
+
+
+
+Guardicore Labs has been tracking the Smominru botnet and its different variants – Hexmen and Mykings – since 2017. The attack compromises Windows machines using an EternalBlue exploit and brute-force on various services, including MS-SQL, RDP, Telnet and more. In its post-infection phase, it steals victim credentials, installs a Trojan module and a cryptominer and propagates inside the network.
+
+In this post, Guardicore Labs provides an in-depth analysis of the attack campaign, focusing on victim analysis and attack infrastructure. Additionally, we have published a script to detect Smominru’s residues on infected machines, as well as a full list of the campaign IoCs.
+
+Among other things, we found that many machines were reinfected even after removing Smominru. This suggests that these systems remain unpatched, and therefore vulnerable to this botnet or other similar attackers. Since patching is often complicated in large data centers, it is highly important to use additional security controls, such as applying network segmentation and minimizing the number of internet-facing servers.
+
+Smominru victim statistics
+Smominru victim statistics
+
+Scope and victims
+The Smominru botnet appeared in recent publications describing the group’s new capabilities and malicious intent. These prompted us to seek out the campaign’s indicators in Guardicore Global Sensors Network (GGSN) and Guardicore Cyber Threat Intelligence. Analysis of the attacks showed strong resemblance to the Hexmen group we researched last year and led us to further analyze the campaign’s most recent iteration.
+
+Guardicore Labs gained access to one of the attackers’ core servers – one which stores victim information and credentials. Monitoring the server’s contents over time enabled us to study infection patterns and draw conclusions of the extent of the campaign. Guardicore Labs has informed identifiable victims and provided them with the details of their infected machines.
+
+Directory listing of the attacker’s FTP server
+Directory listing of the attacker’s FTP server
+
+The attackers’ logs describe each infected host; its external and internal IP addresses, the operating system it runs and even the load on the system’s CPU(s). Furthermore, the attackers attempt to collect the running processes and steal credentials using Mimikatz.
+
+Guardicore Labs decided to take a closer look at the nature of the victims to better understand who is in the crosshairs of Smominru’s (and similar groups’) attacks.
+
+Victims analysis and statistics
+During August, the Smominru botnet infected 90,000 machines around the world, with an infection rate of 4,700 machines per day. Countries with several thousands of infected machines include China, Taiwan, Russia, Brazil and the US.
+
+ 
+
+Global distribution of Smominru. Darker colors represent more infected countries.
+Global distribution of Smominru. Darker colors represent more infected countries.
+
+Infected networks include US-based higher-education institutions, medical firms and even cyber security companies. As the attacks were untargeted and did not discriminate against industries or targets, they reached victims in various sectors. When discussing worms, there are no interesting and uninteresting targets – every vulnerable server is under attack.
+
+Once it gains a foothold, Smominru attempts to move laterally and infect as many machines as possible inside the organization. Within one month, more than 4,900 networks were infected by the worm. Many of these networks had dozens of internal machines infected. The largest network belongs to a healthcare provider in Italy with a total of 65 infected hosts.
+
+Number of infected hosts per network
+Number of infected hosts per network
+
+Not surprisingly, Windows 7 and Windows Server 2008 are the most infected operating systems, representing 85 percent of all infections. These are Windows versions for which there is an operational EternalBlue exploit available on the internet. Other victim operating systems include Windows Server 2012, Windows XP and Windows Server 2003. These are either systems which have been out of support for many years, or about to be End of Life.
+
+OS Distribution across victim machines
+OS Distribution across victim machines
+
+The infected machines are primarily small servers, with 1-4 CPU cores, but there were also some larger servers. We found more than 200 victim machines with more than 8 cores. One such machine was running on a 32-core server. Unfortunately, this demonstrates that while many companies spend money on expensive hardware, they are not taking basic security measures, such as patching their running operating system.
+
+Number of Hosts
+Number of hosts per number of CPUs
+
+According to our analysis, one fourth of the victims were reinfected by the worm. This suggests that victims attempted to cleanup their systems without fixing the root cause issue that left them vulnerable in the first place.
+
+Attack flow
+Previous iterations of the Smominru botnet used many different services and attack files, and this version is no different. A common theme with prior variants such as Hexmen, is removing other criminal infections and adding backdoor users. However, all the IoCs found in this attack were new.
+
+The botnet compromises machines using various methods, the prominent ones being the EternalBlue exploit and brute-force of different services and protocols, such as MS-SQL, RDP and Telnet. This section will focus on the EternalBlue attack flow.
+
+EternalBlue is a cyberattack exploit allegedly developed by the US National Security Agency (NSA). The exploit uses a security vulnerability in Windows SMB server stack and was weaponized for Windows 7 / Windows Server 2012 R2 targets.
+
+After the initial compromise, a first-stage Powershell script named blueps.txt is downloaded onto the machine. This script performs several operations (detailed in the next sections):
+
+It downloads and executes three binary files;
+It creates a new administrative user named admin$ on the system;
+It downloads additional scripts to perform malicious actions.
+Smominru’s initial attack phase
+Smominru’s initial attack phase
+
+The attackers create many backdoors on the machine in different phases of the attack. These include newly-created users, scheduled tasks, WMI objects and services set to run at boot time. The MS-SQL attack flow includes a unique persistence method; the attackers use the obscure task scheduling engine inside MS-SQL to run jobs at different time intervals, e.g. upon reboot, every 30 minutes, etc.
+
+Eliminating other malicious actors
+Unlike previous versions of the botnet, it appears that the attackers are putting much effort in disabling and blocking other malicious actors’ activity. This is done in various ways:
+
+1. Processes identified as other campaigns’ are killed, and their corresponding executable files are deleted;
+
+taskkill /f /m help.exe /m doc001.exe /m dhelllllper.exe /m DOC001.exe /m dhelper.exe /m conime.exe /m a.exe /m docv8.exe /m king.exe /m name.exe /m doc.exe /m wodCmdTerm.exe /m win1ogins.exe /m win1ogins.exe /m lsaus.exe /m lsars.exe /m lsacs.exe /m regedit.exe /m lsmsm.exe /m v5.exe /m anydesk.exe /m sqler.exe /m sqlservr.exe /m NsCpuCNMiner64.exe /m NsCpuCNMiner32.exe /m tlscntr.exe /m eter.exe /m lsmo.exe /m lsarr.exe /m convert.exe /m WinSCV.exe /m ctfmonc.exe /m lsmose.exe /m svhost.exe /m secscan.exe /m wuauser.exe /m splwow64.exe /m boy.exe /m powered.EXE /m systems.exe /m acnom.exe /m regdrv.exe /m mscsuscr.exe /m Pviunc.exe /m Bllianc.exe /m st.exe /m nvidia_update.exe /m dether.exe /m buff2.exe /m a.exe /m lacas.exe
+2. Backdoor credentials of other groups are dropped or deliberately broken by password modification (among these groups is Guardicore’s discovered Nansh0u)
+
+exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','users'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','usera'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','ps'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','fox'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','wwo'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','wq'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','so'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','gaibian'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','xxa'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','win7'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','vice'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','sz'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','ss'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','se'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','gd'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','syn'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','sasa'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','count'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','Myar'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','chica'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','masqer'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','system'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','Rolename'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','kisadminnew1'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','nanshou1433'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','nanshou'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','shitou'; exec sp_password Null,'5yqbm5,m`~!@ ~#$%^&*(),.; ','nanshou';
+3. Scheduled tasks created by other groups are removed;
+
+SCHTASKS /Delete /TN "WindowsUpdate1" /F& SCHTASKS /Delete /TN "WindowsUpdate3" /F& SCHTASKS /Delete /TN "Windows_Update" /F& SCHTASKS /Delete /TN "Update" /F& SCHTASKS /Delete /TN "Update2" /F& SCHTASKS /Delete /TN "Update4" /F& SCHTASKS /Delete /TN "Update3" /F& SCHTASKS /Delete /TN "windowsinit" /F& SCHTASKS /Delete /TN "System Security Check" /F& SCHTASKS /Delete /TN "AdobeFlashPlayer" /F& SCHTASKS /Delete /TN "updat_windows" /F& SCHTASKS /Delete /TN "at1" /F& SCHTASKS /Delete /TN "at2" /F& SCHTASKS /Delete /TN "Microsoft LocalManager[Windows Server 2008 R2 Enterprise]" /F& SCHTASKS /DELETE /TN "\Microsoft\Windows\UPnP\Services" /f& SCHTASKS /Delete /TN "Microsoft LocalManager[Windows Server 2008 R2 Standard]" /F
+4. MS-SQL jobs created by other attack campaigns are deleted;
+
+use msdb EXEC sp_delete_job @job_name = 'dbdotas'; EXEC sp_delete_job @job_name = 'ftpback.exe'; EXEC sp_delete_job @job_name = 'pdoor.exe'; EXEC sp_delete_job @job_name = 'kils.exe'; EXEC sp_delete_job @job_name = 'install.exe'; EXEC sp_delete_job @job_name = 'java.exe'; EXEC sp_delete_job @job_name = 'shengda.exe'; EXEC sp_delete_job @job_name = 'mac.exe'; EXEC sp_delete_job @job_name = 'reg.exe'; EXEC sp_delete_job @job_name = 'wmi'; EXEC sp_delete_job @job_name = 'regs.exe';
+In addition, Smominru blocks various TCP ports (SMB, RPC) in order to prevent other attackers from breaching its own infected machines.
+
+cmd.exe /c netsh ipsec static delete policy name=win netsh ipsec static add policy name=win netsh ipsec static add filterlist name=Allowlist netsh ipsec static add filterlist name=denylist netsh ipsec static add filter filterlist=denylist srcaddr=any dstaddr=me description=not protocol=tcp mirrored=yes dstport=135 netsh ipsec static add filter filterlist=denylist srcaddr=any dstaddr=me description=not protocol=tcp mirrored=yes dstport=137 netsh ipsec static add filter filterlist=denylist srcaddr=any dstaddr=me description=not protocol=tcp mirrored=yes dstport=138 netsh ipsec static add filter filterlist=denylist srcaddr=any dstaddr=me description=not protocol=tcp mirrored=yes dstport=139 netsh ipsec static add filter filterlist=denylist srcaddr=any dstaddr=me description=not protocol=tcp mirrored=yes dstport=445 netsh ipsec static add filteraction name=Allow action=permit netsh ipsec static add filteraction name=deny action=block netsh ipsec static add rule name=deny1 policy=win filterlist=denylist filteraction=deny netsh ipsec static set policy name=win assign=y
+Binary payloads
+The binary files downloaded by blueps.txt include a worm downloader (u.exe / ups.exe), a Trojan horse (upsupx.exe) and an MBR rootkit (max.exe / ok.exe).
+
+u.exe (also named ups.exe, and previously referred to as cab.exe) is responsible for the worm module. It lays the groundwork for the worm by downloading DLLs required to perform network scans. Then, it connects to an attack server, checks for the latest version of the worm and downloads it. The versioning mechanism allows the attackers to add, modify and remove propagation techniques within the worm program. Finally, the worm is registered as a service named xWinWpdSrv and its downloader – u.exe – deletes itself.
+
+The Master Boot Record (MBR) is a popular target for malware authors targeting older operating systems. By maliciously modifying the MBR, attackers can take over the operating systems boot process and inject their code into every part of the system.
+
+The worm is an executable file downloaded as wpd.jpg and saved locally as msinfo.exe. This is the module responsible for spreading the malicious payloads within the network, using a Python-based EternalBlue exploit and brute-force of multiple Windows services, such as MS-SQL, Telnet, RDP, and more.
+
+The third executable (upsupx.exe) drops a variant of an open-source Trojan named PcShare. The Trojan has many capabilities, including download and execute, command and control, screenshot capturing and information stealing. In the Smominru campaign, we suspect that the Trojan is used primarily to download a Monero cryptominer.
+
+
+Smominru Binaries Execution Flow
+
+Attack infrastructure and backend
+The Smominru group tends to use a large collection of payloads throughout the attack. In its current iteration, Smominru downloads and runs almost twenty distinct scripts and binary payloads.
+
+The storage infrastructure is widely distributed; more than 20 servers are used as part of the attacks. Each machine serves a few files, with each file referencing additional 2-3 servers. Many of the files are stored on more than one hosting server, making the attack infrastructure flexible and fairly resistant to takedowns.
+
+Unlike the typical botnet, most of the machines are dedicated servers used by the attackers rather than repurposed victim servers. These machines are mostly hosted in the US, with some hosted by ISPs in Malaysia and Bulgaria. Guardicore has informed the ISPs of the abused machines. None of these ISPs has replied, but we noticed that some of them no longer host malicious files after receiving our emails.
+
+A significant amount of the attacks originate from western ISPs. Many hosting companies proactively detect and block malicious activity coming from their networks. It is unclear why hosting companies such as Verizon or Rackspace are incapable of policing their networks in a similar fashion. Such actions would have stopped a large fraction of these attacks.
+
+
+Core servers in the attack infrastructure
+
+Detection
+Guardicore Labs has developed a Powershell script to detect machines infected with the Smominru worm. The script is easily run from Windows command line interface. For more details and usage instructions, please visit our campaign repository.
+
+ 
+
+
+Guardicore’s Detection Script run in cmd
+
+Alternatively, you can manually check for the existence of the admin$ user, or the existence of the following files which indicate the Trojan’s execution on the machine.
+
+C:\Windows\Debug\item.dat C:\Program Files\Common Files\xpdown.dat C:\Program Files\common Files\xpwpd.dat
+Mitigation
+The spreading of Smominru is heavily based on weak passwords, but it also relies on the existence of EternalBlue vulnerable machines. Unpatched systems allow the campaign to infect countless machines worldwide and propagate inside internal networks. Thus, it is crucial that operating systems be aligned with the currently-available software updates.
+
+However, patching is never as simple as stated. Therefore, it is of high importance to apply additional security measures in the data center or the organization. Network microsegmentation and real time threat detection of possibly malicious internet traffic as well as limiting internet-exposed servers are all critical to maintaining a strong security posture.
+
+
+=======================================
+
+Hackers have injected hundreds of websites running the Drupal content management system with malicious software used to mine the cryptocurrency monero.
+
+This latest incident was uncovered by Troy Mursch, the security researcher behind the website Bad Packets Report. He wrote Saturday that more than 300 sites had been compromised by hackers who installed the browser mining software Coinhive, which mines the cryptocurrency monero, by exploiting a vulnerability in an outdated version of the Drupal content management system (CMS).
+
+"Cryptojacking," as similar attacks are called, has become a common problem in recent months. Whereas hackers used to favor ransom attacks – in which they would scramble victims' data and demand ransoms in bitcoin or another cryptocurrency in order to decrypt it – they now increasingly infect websites with software that harnesses visitors' computers to mine cryptocurrency on the attackers' behalf.
+
+Mursch told CoinDesk that while cryptojacking is not as overt as ransomware, it "continues to be a problem - especially for website operators."
+
+He explained:
+
+Affected sites include the San Diego Zoo, the National Labor Relations Board, the City of Marion, Ohio, the University of Aleppo, the Ringling College of Art and Design and the government of Chihuahua, Mexico. A full list of affected sites is available on this spreadsheet.
+
+Visitors to affected websites may not even notice that their computers are running the cryptographic functions used to generate monero for hackers. The attacks slow users computers down, however, and can cause wear and tear on computers' processors.
+
+Not all Coinhive users are malicious, however. Salon, a news outlet, and UNICEF use the software to raise funds, but only run it with visitors' permission.
+
+Hacker image via Shutterstock.
+
+Disclosure
+
+Please note that our privacy policy, terms of use, cookies, and do not sell my personal information has been updated.CoinDesk is an award-winning media outlet that covers the cryptocurrency industry. Its journalists abide by a strict set of editorial policies. In November 2023, CoinDesk was acquired by the Bullish group, owner of Bullish, a regulated, digital assets exchange. The Bullish group is majority-owned by Block.one; both companies have interests in a variety of blockchain and digital asset businesses and significant holdings of digital assets, including bitcoin. CoinDesk operates as an independent subsidiary with an editorial committee to protect journalistic independence. CoinDesk employees, including journalists, may receive options in the Bullish group as part of their compensation.
+
+
+
+Learn more about Consensus 2024, CoinDesk's longest-running and most influential event that brings together all sides of crypto, blockchain and Web3. Head to consensus.coindesk.com to register and buy your pass now.
+

@@ -1,0 +1,49 @@
+https://www.semanticscholar.org/paper/A-Survey-of-Attack-Instances-of-Cryptojacking-Cloud-Jayasinghe-Poravi/597ec6facc109fb946c6a77861f258fe82f0102d  (2019)
+
+
+https://www.microsoft.com/en-us/security/blog/2023/07/25/cryptojacking-understanding-and-defending-against-cloud-compute-resource-abuse/ (2021)
+
+
+https://www.zdnet.com/article/cryptojacking-attacks-surge-against-enterprise-cloud-environments/ (2021)
+
+
+https://www.helpnetsecurity.com/2019/03/18/cryptojacking-cloud-resources/ (2019)
+
+
+https://decrypt.co/resources/what-is-cryptojacking-how-to-detect-and-avoid-it-2021 (2021)
+
+
+https://www.forbes.com/sites/davidbalaban/2023/03/07/shift-in-cryptojacking-from-end-user-machines-to-cloud-services/ (2023)
+
+
+https://www.analyticsinsight.net/why-is-cryptojacking-a-major-concern-in-2022-and-beyond/ (2022)
+
+
+https://cybernews.com/security/watch-out-cryptojacking-is-on-the-rise-again/ (2021)
+
+https://anonymania.com/cryptojacking-detection-removal-guide/ (2020)
+
+https://www.forbes.com/sites/davidbalaban/2023/03/07/shift-in-cryptojacking-from-end-user-machines-to-cloud-services/ (2023)
+
+https://www.engadget.com/2018-02-20-tesla-cryptojacking-report.html?_fsig=qBSPYD2QbmpmD1TT06kfFg--%7EA (2018)
+
+https://www.pcmag.com/news/cryptocurrency-miner-infiltrates-a-tesla-cloud-server (2018)
+
+https://blog.sonicwall.com/en-us/2023/08/cryptojacking-continues-crushing-records/ (2023)
+
+
+https://www.howtogeek.com/357571/what-is-cryptojacking-and-how-can-you-protect-yourself/ (2018)
+
+
+https://consumer.ftc.gov/consumer-alerts/2018/06/protecting-your-devices-cryptojacking (2018)
+
+https://learn.g2.com/cryptojacking (2023)
+
+
+https://securityintelligence.com/posts/cryptojacking-attacks-whos-mining-on-your-coin/ (2019)
+
+
+
+
+
+
