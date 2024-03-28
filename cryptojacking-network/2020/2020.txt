@@ -77,3 +77,247 @@ Still, it all starts with the end-user. You must take the necessary time to trai
 
 
 
+What is cryptojacking?
+Cryptojacking is the act of hijacking a person's computer to secretly mine cryptocurrency. 
+Because cryptojacking requires increasing processing power to mine cryptocurrencies like Bitcoin, miners are discovering new ways to wield that processing power. One such way is to borrow it from thousands of unwitting internet users.
+Bitcoin became incredibly lucrative in 2017, when the price skyrocketed toward a walloping $20,000 per coin. In fact, personal devices were doing more cryptocurrency mining than anything else that year. Digital money had taken the internet by storm, and you’d better believe there were people who would find unscrupulous ways to profit from it. 
+A Bitcoin miner virus can be so aggressive that it drains your battery in no time, renders your computer unusable for long periods, and shortens the life of your device.
+One result was the development of Bitcoin mining malware. Hackers developed ways to hijack processing power from machines used by people like you — which, when multiplied by the thousands, dramatically increases the chances of successful mining. The idea is that it’s a much cheaper alternative to shelling out thousands of dollars for dozens of ASIC miners (the traditional way to mine cryptocurrency).
+How does cryptojacking affect you?
+The individual who infects your computer with cryptocurrency mining malware is doing so only to make a buck. Strictly speaking, cryptojacking is not about accessing or sharing your private information.
+But, cryptojackers are using your system resources without your knowledge or consent. A Bitcoin miner virus can be so aggressive that it drains your battery in no time, renders your computer unusable for long periods, and shortens the life of your device. Not only that, but your electricity bill goes up, and your productivity goes down. It's safe to say that this constitutes a security breach.
+It’s important to note that you will almost never run into cryptojacking operations targeting Bitcoin. Because Bitcoin requires huge processing power to mine, it’s not possible to do so using cryptojacking. But as the most well-known cryptocurrency, “Bitcoin” is sometimes used to refer to all types of digital currency. “Bitcoin miner virus” is a catch-all term in the same way. 
+Only smaller cryptocurrencies like Monero can rely on pedestrian hardware specs, meaning that they can be mined with cryptojacking malware. The untraceability of Monero transactions is another factor that makes Monero an ideal target for this brand of cybercrime. But regardless of the kind of mining operation that may have infected your system, you’ll want to put a stop to it right away with a strong antivirus tool. 
+AVG AntiVirus FREE will detect and block all kinds of malware infections, from cryptojacking to spyware to run-of-the-mill viruses. Download it today to get 24/7 online protection.
+Download AVG AntiVirus FREE
+Get it for iOS, Android, PC
+Different types of miner viruses
+There are multiple ways you can get cryptojacked, and they differ in their traceability. Let’s take a look at two of the most common methods.
+Browser-based miner virus
+Website scripts are common ways for cryptojackers to take control of your computer. Because scripts are functions that run behind the scenes and have a certain amount of access to your computer, they are ideal for browser-based Bitcoin mining. Hackers have also been known to find backdoors in WordPress databases and will execute code there, as well. 
+All you have to do is visit a particular website without protection (or with out-of-date software), and an invisible script will tell your computer to start mining. This is usually true only for compromised websites, which is why it’s so important to make sure the websites you visit are safe. But even reputable sites have been known to sustain occasional attacks, as we will see. In the best-case scenario, the mining stops as soon as you leave the site or close the browser. 
+Victims of cryptojacking can expect the resources of their CPU to be pushed to their limit.
+Email attachments and sketchy links are other ways that hackers can get your computer to run bad code. Make sure to double-check any email before clicking anything. Be wary of Facebook or other platforms asking for your password for no reason. Don't believe every button that tells you that you need to update Firefox or Chrome, either. If it’s not coming from the browser’s official website, that button could install mining software onto your browser. And it probably won’t go away when you close your browser. 
+Victims of cryptojacking can expect the resources of their CPU to be pushed to their limit. Even GPU exploitation, where powerful video cards are tapped for their capacity, can occur. This translates to a slow-down in computer performance and an increased electricity bill. It doesn't sound so bad compared to, say, identity theft. But it is still very much a security issue that you should protect yourself against.
+Adware Bitcoin miners
+Adware Bitcoin miners are another type of cryptojacking malware. Once they’ve infected your machine, adware bitcoin miners sit on your computer as installed programs or lines of code embedded in RAM, making them far more dangerous than some other forms of cryptojacking.
+From deep within your system files, file-based adware can disable your antivirus. It can ensure that a copy of itself is always installed on your computer. It can even detect when you've got the task manager open and pause its activity accordingly. That means you would never see a CPU usage spike, and you would never see the name of the program sucking up all your resources. 
+Sometimes a miner virus appears as fileless malware: commands executed from the computer's memory or essential OS operations. That makes it much, much harder to detect.
+Fileless malware can be extremely difficult to detect and remove.
+Using an individual's computing power without their permission and draining the productivity and life of their hardware is bad enough. Burrowing into the inner workings of a machine, crippling its functionality, and hiding any trace of the malware is even worse and more invasive.
+If you've recently downloaded a program that looked like the real thing but was actually “off-brand,” so to speak, you might have cryptocurrency malware installed. A specific example is Auto Refresh Plus, which disguises itself as a mandatory update to Mozilla Firefox. Once it's installed, it begins mining cryptocurrency in the background while bombarding you with unwanted ads. You’ll need an anti-malware program to remove it from your system.
+Notable cryptojackers
+There are a couple of names you should know about if you want to stay abreast of the cryptojacking phenomenon. Coinhive was a service that tried to mine cryptocurrency for good uses, but ended up being misused. RoughTed, a totally separate phenomenon, is the umbrella term for a cybercrime campaign involving many different illicit activities. Let’s take a deeper look.
+What is Coinhive?
+Coinhive started as a legitimate alternative to advertising, generating revenue with your PC’s CPU resources while you were on a webpage. The idea was great — a script on the website would tell your computer to mine for the cryptocurrency Monero. In turn, the website wouldn't need to host ads! 
+It had many potential applications. UNICEF Australia collected donations with the message “Give hope, just by being here” on a page with Coinhive running. As long as the page was open in a browser, the person's computer would continuously mine for Monero, generating donations. 
+While the original intent behind Coinhive was to use only a portion of a person's computing power, the result was that cryptojackers turned the knob to 11, slowing down the computer to the point of unusability.
+What went wrong? A few bad actors used the tech for their own personal gain. Coinhive became prevalent on hacked websites. While the original intent behind Coinhive was to use only a portion of a person's computing power, the result was that cryptojackers turned the knob to 11, slowing down the computer to the point of unusability. 
+Things got real for the UK’s National Health Service when they discovered that their BrowseAloud accessibility software, which uses a voice to read websites for the benefit of the blind, was hacked with Coinhive to mine Monero. Increased CPU usage aside, much more alarming was the security breach itself. The amount of private information which could've been leaked is staggering.
+Ad-blockers and antivirus software had to keep up and block these scripts from running, and cryptojacking became a veritable security breach. It didn't matter how it was being used; it was simply too easy for websites to mine without permission.
+On top of that, services which sought to mine cryptocurrency ethically still failed to ask for permission, discouraging many who might have otherwise advocated for it. That happened with the peer-to-peer, file-sharing site The Pirate Bay, which replaced banner ads with Coinhive without telling anyone. Not only that, but The Pirate Bay configured Coinhive incorrectly, causing users to experience a massive spike in CPU usage upon visiting the site. 
+The Pirate Bay received plenty of backlash. With the technology being misused in so many different ways, cryptomining as an alternative to ads was dead in the water. Coinhive closed up shop in 2019.
+What is RoughTed?
+RoughTed is an organized cybercrime campaign that has changed the whole game of cybersecurity. Imagine malware that takes advantage of something we see every day on the internet: ads. If hackers could take advantage of third-party ad networks distributing ads throughout the internet, half of the work would be done for them. They'd have a vast, multi-pronged attack that was so spread out that it would not only hit a huge number of people, but it would also escape easy detection.
+Unfortunately, you don’t have to imagine that, because it exists. It’s called malvertising. On websites all across the internet, ads are telling computers to mine for cryptocurrency. 
+How do you convince an ad network to distribute your shady ads?
+•	Obfuscate. Write code that looks innocent. Programming languages are just that — languages. Malvertising campaigns are able to slip past certain filters by rewriting code.
+•	Use shady networks. There are networks that display ads for The New York Times, and those that display ads for gambling sites or pornography sites. Which sites do you think care more about how their ad space affects their users? The NYT cannot risk their reputation, but as long as a gambling site can get an extra dime, who cares what kind of ad it shows?
+•	Make the ads look legit. You might think there is a correlation between an ad's appearance and what it's doing behind the scenes. There is none. The ad could be for anything at all, look crisp and elegant, and still contain malicious code.
+•	Hijack an existing ad network. Legitimate sites like The New York Times are not entirely immune. In fact, the NYT started unwittingly displaying malicious ads in 2016, all coming from a compromised ad network. RoughTed still has not been stopped, even as it makes Amazon's Content Distribution Network do their work for them.
+•	Redirect. Redirecting is how someone comes into contact with the malware in the first place. The ad runs a script that sends the user to a malicious server — but only if they are using outdated software. For many users, the malicious ad will do nothing harmful. That makes it harder to detect.
+•	Keep redirecting. For the victims as well as the hosts, an endless amount of redirects (or a set of legitimate-looking ones) will help hide any shady activity.
+That is how cryptojacking can spread throughout the internet. Unfortunately, cryptojacking is among the more moderate of RoughTed's offenses. The campaign has also been known to compromise personal information and infect devices with sluggish malware. That’s why it’s important to know how to detect and prevent cryptojacking and other malware.
+How to know if you're infected
+To find out if you’ve been infected, the first step is to check your CPU temperature — usually high CPU usage is a big red flag. With a cryptojacking infection, your computer works much more slowly than usual, and the fan sounds like a jet engine on take off. This is the cryptojacking software using all of your computer's resources to mine the cryptocurrency. To know for sure, open Task Manager and look at the Performance tab, paying special attention to the CPU. If it's hitting 80 or 90% without any programs open, something's definitely wrong.
+
+Additionally, you should know how to spot a Bitcoin miner. CPU and GPU overuse slows down system processing, sometimes to the point of overheating. Bitcoin mining malware detection isn't just about removing a nuisance from your device; it's about improving the lifespan of that device. Loapi Monero-mining Android malware caused enough overheating to break devices.
+Covert cryptocurrency miners can present as adware, as well. Be sure to watch out for the typical signs that you've got adware. These include, as the name suggests, ads appearing where they shouldn't and a web browser acting with a mind of its own, like installing new toolbars or visiting strange sites.
+(While we’re on the subject, it’s also good to know how to tell if your phone has a virus, even though it’s highly unlikely that your phone has been jacked to mine cryptocurrency.)
+How to remove a bitcoin miner virus
+The process for how to get rid of a Bitcoin miner is largely the same as getting rid of other malware. 
+The first step is to run a trusted antivirus. AVG AntiVirus FREE is a top-notch cybersecurity tool that will help you remove malware and block future infections. We’ll show you the best way to use it to rid your computer of any pesky miner viruses. Let’s download and install AVG AntiVirus FREE to get started.
+Download AVG AntiVirus FREE
+Get it for iOS, Android, PC
+1.	Open AVG AntiVirus FREE. You can click Run Smart Scan, but it might also be a good idea to try a different kind of scan, since miner viruses can hide so well. To run a different scan, click the three dots next to “Run Smart Scan.”
+
+2.	Choose Boot-time Scan. This deep scan will check for more hidden threats.
+
+3.	Review the options. Scroll down and confirm.
+
+4.	Click Run on Next PC Reboot to schedule boot-time scan.
+
+5.	Reboot your PC to perform the boot-time scan. If a miner virus or any other threat is discovered, you’ll be able to delete it right away.
+6.	AVG AntiVirus FREE will regularly scan your machine to keep you protected from any additional infections.
+While we’re on the topic of good security habits, take a moment to clear your browsing and search history. These are files that your computer saves and displays when you visit a site, so it doesn’t have to download the same files again. And while you’re at it, delete your browser cookies, too. Browser cookies track your information, and you don’t want bad cookies eating their way into your hard drive.
+How to defend against Coinhive and other miner viruses
+The best defense against all types of malware is prevention. Here are a few simple actions you can take.
+•	Avoid strange links. Don't click strange-looking or misspelled URLs. When in doubt, you can google the URL and check the description on the results page to verify if the site is legit or not. Avoid clicking on shortened URLs from random places like YouTube comment sections.
+•	Double-check emails before downloading attachments or clicking links. Take a look at the email address and determine if it's fake or not. “account-security@facebok.com” is probably fake, because “Facebook” is misspelled. Typos or strange ways of writing are other signs of spoofed email. And always be wary of phishing emails that ask you to input your password or other personal info.
+•	Use an anti-mining browser extension. Certain extensions like minerBlock can block websites from forcing your computer to mine cryptocurrency. Research an extension thoroughly before installing it, and make sure you have a strong antivirus to protect you in case any extensions or apps turn out to be malicious.
+•	Check Task Manager periodically. In the Processes tab, you can see which processes are consuming the most resources. Internet browsers can get up there with their memory usage, especially if you've got tons of tabs open. But if there's some unexplained activity, or if your CPU is showing 90% usage even though few tabs are open and other programs are closed, you should probably investigate further. 
+Protect yourself with strong antivirus software
+AVG AntiVirus FREE is exceptionally robust security software. Not only will it protect your computer with real-time security updates, but it will also scan your machine for both malware and performance issues, catching malicious downloads before any infections have the chance to burrow in.
+And with its all-new, refreshingly simple design, AVG AntiVirus FREE keeps you safe without bogging you down. Download and install it today to block all the types of malware discussed above, including sneaky fileless malware. Get 24/7 protection, completely free.
+
+Cryptocurrency and Cryptojacking Make a Dangerous Pair
+ 
+With the rise in popularity of cryptocurrencies (electronic money) and their increasing acceptance as a legitimate way to purchase goods and services online, it didn’t take long for cryptojackers or cryptohackers to begin devising their schemes to mine cryptocurrency from others; and it’s not slowing down anytime soon.
+So, what is cryptojacking and how can you defend against it? Find out what you need to know here.
+What is Cryptojacking?
+Cryptojacking is an emerging online threat with the main purpose of stealing or “mining” cryptocurrencies, forms of online money, from users’ mobile or online devices without their consent or knowledge. However, there is more than one sole malicious purpose for cryptojacking – there are multiple reasons and methods behind this kind of digital attack.
+How Do Cryptocurrencies Work?
+The first thing to know about cryptocurrency is that it does not work the same as regular currency. Cryptocurrencies are forms of digital money that exist only in the online world, with no actual physical form.
+The second thing to know is that cryptocurrency is decentralized. This means that unlike credit and debit, it’s controlled solely by anonymous users and computer algorithms as opposed to a central bank or government. Units of cryptocurrency, known as “coins,” are nothing more than entries or records of transactions in multiple databases existing simultaneously across a network of millions of computers that don’t belong to any one person, location, or organization.
+Because there is no government oversight or central regulator of cryptocurrency, in order to handle the millions of records and serious risks, a distributed ledger exists – the most common form being a blockchain. In a blockchain, every transaction is heavily encrypted, timestamped, and added to a “block” of transactions. When a certain number of transactions have been assembled, that block is added to a chain of blocks – i.e., a blockchain.
+Blockchains are meant to help protect against counterfeiting and safeguard transactions. Essentially, the blockchain is a ledger or chain of information that retains a detailed history of each digital transaction, which helps to ensure that people cannot double spend their digital money.
+In a cryptocurrency blockchain, each of the blocks in the chain stores details and data about a transaction, such as the receiver, sender, and number of coins involved. The blockchain is open for anyone to access, but once a block is added it can’t be modified without affecting the entire chain.
+The Role Cryptomining Plays
+In a blockchain, before a transaction can be added, it must be authenticated – this is where cryptomining comes in. Every time a new transaction takes place it must be validated by a cryptominer. However, because digital currency is heavily encrypted, the verification process takes up a lot of time and computing power. Because of this, cryptominers are paid for their efforts through a token of digital currency – typically just a few dollars per transaction.
+Transactions, however, can take hours to validate properly on a regular computer, so it’s not an easy feat to make a sizeable amount of money. There’s also the competition from other cryptominers to consider in order to increase verification efficiency. More than one miner can work on a transaction a time – but only the fastest miner earns the digital reward. The best way to validate transactions faster: more processing power.
+How Does Cryptojacking Work? – Part One
+When it comes to cryptojacking, the more power the better for cryptominers. Crytominers who are driven by a high earning incentive and the need for processing power to get it are serious offenders of crytojacking. Even if a system, device, or organization does not use cryptocurrency, they are still prime targets for cryptojackers.
+This is because when they can get their cryptomining malware to infect a perfectly good, or better yet, powerful computer system, it will eat into it like a parasite. Cryptominers will then suck the processing power out of any device they can to use it to mine for cryptocurrency, increasing their profits by allowing them to mine more transactions faster. This takes a couple of dollars and turns it into a huge payday. The only expense? It comes at the expense of the user's device, which will become increasingly slow and most likely fail altogether.
+How Does Cryptojacking Work? – Part Two
+Cryptojacking is also the act of cybercriminals hacking into business and/or personal computers, laptops, and mobile devices to install or infect them with software to do their bidding. The software works by using a computer’s power and resources to mine for cryptocurrencies or steal the digital wallets of unsuspecting victims. The code is easy to deploy, runs in the background, and is difficult to detect other than a few minor red flags.
+One of the main ways cryptojackers work to enslave devices is through traditional malware techniques, such as a link or attachment in an email. Once a link is clicked or an attachment is opened, the device is thereby infected with the cryptomining code and the cryptojacker will begin working around the clock to mine cryptocurrency while staying hidden in the background.
+An alternate cryptomining approach is a browser-based attack known as drive-by cryptomining. Similar to malicious advertising exploits, the scheme involves embedding a piece of JavaScript code into a web page. If the page is visited, the code activates and performs cryptocurrency mining on any user devices that visit the web page. Nothing is stored on a device, but the mining will take place as long as the browser is open.
+One last way crytojackers can get access to cryptocurrency is through cloud cryptojacking. This form of crytojacking involves hijacking cloud resources to mine for cryptocurrency. When hackers use cloud cryptojacking, they search through an organization’s files and code for API keys to access their cloud services. Once access is gained, hackers can siphon unlimited CPU resources for cryptomining. It’s currently the fastest-growing cybersecurity threat to the enterprise and by using this method hackers can significantly accelerate their cryptojacking efforts to illegally mine for currency.
+How Can You Defend Yourself Against Cryptojacking?
+While cryptojacking is still relatively new, attacks are becoming more commonplace – and if you are a victim of cryptojacking, you may not even notice since most cryptojacking software is designed to stay hidden. The trick is to prevent this exploit from happening in the first place and to pay attention to the red flags if they’re noticeable.
+Red flags to keep an eye on include slower computer response times, increased processor usage, overheating devices, and higher electricity bills. If your PC or Mac is slowing down, is using its cooling fan far more than normal, or your electricity bill has skyrocketed, you may have a reason to suspect cryptojacking.
+To prevent an attack from happening, administrators need to take action by using advanced intrusion prevention systems like next-gen firewalls, antivirus, and anti-malware software from the get-go. Additionally, arming yourself with a VPN is a key defense mechanism against cryptojackers and other kinds of digital threats. VPNs encrypt internet connections and hide IP addresses, keeping you and/or your organization safer and anonymous in the online world.
+If a network is compromised, steps should be taken to conduct a root-cause analysis that identifies how the malware was installed so that further repeat attacks can be prevented. Make the threat of cryptojacking a part of your cybersecurity plan or awareness training, focusing on phishing with fake links and/or attachments. For web browsers, try installing an ad-blocker with cryptomining detection capabilities like Adblock Plus or an anti-cryptomining extension like minerBlock.
+
+In the ever-shifting world of future technologies, there is a prolific increase in computing resources of end devices. Simultaneously, advancements in technology have resulted in attackers exploiting various vulnerabilities in the devices. One such attack which had commenced in a large scale is surreptitiously carrying out the process of cryptomining by targeting users without their consent. This process is called as cryptojacking. To overcome this problem, the proposed system deals with providing security features for detecting and controlling the act of file-based cryptojacking malwares. The proposed model analyses the presence of cryptojacking process in the victim’s system by two ways—one by analyzing the network traffic for mining-related header information and the other by detecting anomalies in the CPU usage. The model detects cryptojacking using CPU-based outlier detection implemented using a mathematical model with an error rate of 2% and analysis of network packets which proves to be faster and meticulous than contemporary existing machine learning algorithms.
+_______________________________
+
+Executive Summary
+On May 29, 2020, Unit 42 researchers discovered a new variant of a hybrid cryptojacking malware from numerous incidents of CVE-2019-9081 exploitation in the wild. A closer look revealed the malware, which we’ve dubbed “Lucifer”, is capable of conducting DDoS attacks and well-equipped with all kinds of exploits against vulnerable Windows hosts. The first wave of the campaign stopped on June 10, 2020. The attacker then resumed their campaign on June 11, 2020, spreading an upgraded version of the malware and wreaking havoc. The sample was compiled on Thursday, June 11, 2020 10:39:47 PM UTC and caught by Palo Alto Networks Next-Generation Firewall. At the time of writing, the campaign’s still ongoing.
+Lucifer is quite powerful in its capabilities. Not only is it capable of dropping XMRig for cryptojacking Monero, it’s also capable of command and control (C2) operation and self-propagation through the exploitation of multiple vulnerabilities and credential brute-forcing. Additionally, it drops and runs EternalBlue, EternalRomance, and DoublePulsar backdoor against vulnerable targets for intranet infections.
+ 
+The exhaustive list of weaponized exploits includes CVE-2014-6287, CVE-2018-1000861, CVE-2017-10271, ThinkPHP RCE vulnerabilities (CVE-2018-20062), CVE-2018-7600, CVE-2017-9791, CVE-2019-9081, PHPStudy Backdoor RCE, CVE-2017-0144, CVE-2017-0145, and CVE-2017-8464. These vulnerabilities have either “high” or “critical” ratings due to their trivial-to-exploit nature and their tremendous impact inflicted on the victim. Once exploited, the attacker can execute arbitrary commands on the vulnerable device. In this case, the targets are Windows hosts on both the internet and intranet, given that the attacker is leveraging certutil utility in the payload for malware propagation. Fortunately, the patches for these vulnerabilities are readily available.
+While the vulnerabilities abused and attack tactics leveraged by this malware are nothing original, they once again deliver a message to all organizations, reminding them why it’s utterly important to keep systems up-to-date whenever possible, eliminate weak credentials, and have a layer of defenses for assurance.
+At the time of writing this blog, the XMR wallet has paid 0.493527 XMR, which converts to approximately $32 USD.
+Palo Alto Networks Next-Generation Firewalls can detect and block all the exploit attempts from this kind of malware family.
+This blog includes a detailed analysis of Lucifer and the comparison of version 1 and version 2.
+Lucifer: Cryptojacking and DDoS Campaign
+A quick note on the name: While the malware author named their malware Satan DDoS, there’s another malware, Satan Ransomware, bearing that devious name already. An alternative alias was given to this malware to avoid confusion. As a result of staying faithful to the unique strings in the binary, we are calling this Lucifer.
+We identified two versions of Lucifer in our research - we focus first on version 1 and then highlight the changes made to version 2 in the following section.
+Lucifer contains three resource sections, each of which contains a binary for a specific purpose. The X86 resource section contains a UPX-packed x86 version of XMRig 5.5.0. The X64 resource section contains a UPX-packed x64 version of XMRig 5.5.0. The SMB section contains a binary, in which there’s a lot of Equation Group’s exploits like EternalBlue and EternalRomance, and of course the infamous DoublePulsar backdoor implant.
+X86: 8edbcd63def33827bfd63bffce4a15ba83e88908f9ac9962f10431f571ba07a8
+X64: Ac530d542a755ecce6a656ea6309717ec222c34d7e34c61792f3b350a8a29301
+SMB: 5214f356f2e8640230e93a95633cd73945c38027b23e76bb5e617c71949f8994
+Upon execution, the malware first decrypts its C2 IP address using a xor-incremental encryption and then creates a mutant, using its C2 IP address as the mutant’s name.
+The decrypted C2 IP address is 122[.]112[.]179[.]189.
+The name of the mutant object is \Sessions\1\BaseNamedObjects\122[.]112[.]179[.]189
+The pseudo-code for the decryption algorithm is shown in the figure below.
+ Figure 1. Decryption routine
+The malware then proceeds to persist itself by setting the following registry key values.
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run\QQMusic - %malware binary path%
+HKLM\Software\Microsoft\Windows\CurrentVersion\Run\QQMusic - %malware binary path%
+The binary also uses schtasks to set up itself as a task running periodically, ensuring additional layer of persistence. The command executed is shown in Figure 2.
+ Figure 2. Execution of schtasks
+Once the malware has persisted itself, it then checks whether there’s any existing stratum mining information stored in the following registry key value:
+HKLM\Software\Microsoft\Windows\CurrentVersion\spreadCpuXmr - %stratum info%
+The mining information stored in this registry key value takes precedence if the data is present and legit. Otherwise, the malware falls back to its default data embedded in the binary.
+The malware enables itself with debug privilege and starts several threads to carry out its operation in concurrent fashion. The following table summarizes the function of each thread.
+Function Address	Description
+0x0041C970	Clear event logs, remove a log file, terminate the miner process, and repeat its cleaning routine every 18000 second.
+0x00414B60	Collect interface info and send miner status to its C2 server.
+0x00419BC0	Check the remote address and remote port of all TCP connections. If there’s a match and the connection-owning process is not the malware itself and the process’s module path is not C:\ProgramData\spreadXfghij.exe, the malware kills that process and deletes that file. The allow list of ports and IP address are in the Appendix.
+0x0041A780	Get or initialize its miner parameter, kill miner and Taskmgr process if necessary, drop the miner binary, and execute the miner binary with the values of the arguments based on the host’s memory usage. Both the x86 or x64 bit version of the miner is saved as C:\\ProgramData\\spreadXfghij.exe
+0x00418DC0	Propagate through brute-forcing credentials and exploitation. Also drop the Equation Group’s exploits and launch them to propagate through exploiting years old SMB vulnerabilities.
+0x0041C840	Copy and save the malware as C:\\ProgramData\\spread.txt
+Table 1. Worker Thread Description
+The malware employs different propagation strategies.
+The malware scans for both open TCP ports 135 (RPC) and 1433(MSSQL) against the target, be it internal or external, and probes for the credential weakness in attempt to gain unauthorized access.
+If the target has the RPC port open, the malware brute-forces the login using the default username administrator and its embedded password list. It then copies and runs the malware binary on the remote host upon successful authentication.
+When the malware detects that the target has TCP port 1433 open, it tries to brute-force its way in using its embedded list of usernames and passwords. Upon successful login, the malware then issues shell commands to download and execute a replica of itself on the victim. The aforementioned list of usernames and passwords can be found in the appendix section.
+In addition to brute-forcing the credentials, the malware leverages exploitation for self-propagation. For intranet infection, it drops and runs EternalBlue, EternalRomance, and DoublePulsar backdoor against the target when the target has TCP port 445 (SMB) open. Upon successful exploitation, certutil is used to propagate the malware.
+The following figures show the parameters passed to launch the exploits and the backdoor implant.
+ Figure 3. EternalBlue and DoublePulsar combo (for non-XP targets) Figure 4. EternalBlue and DoublePulsar combo (for XP targets) Figure 5. EternalRomance and DoublePulsar combo (all targets)
+In order to infect external hosts, the malware first generates a non-private IP address, and then probes this randomly-selected victim with HTTP requests over a number of ports. The list of ports is available in the Appendix. When the malware receives a valid HTTP response from the victim, it then tries to exploit the target based on the conditions shown in the following table.
+Condition	Exploit
+HFS found in the HTTP response	CVE-2014-6287
+Jetty found in the HTTP response	CVE-2018-1000861
+Servlet found in the HTTP response	CVE-2017-10271
+No keywords found in the HTTP response	ThinkPHP remote code execution (RCE) vulnerabilities
+CVE-2018-7600
+CVE-2017-9791
+CVE-2019-9081
+PHPStudy Backdoor remote code execution (RCE)
+Table 2. Exploit conditions and CVEs
+Since the same vulnerability (e.g ThinkPHP RCE) may be triggered in different endpoints (i.e via different URLs), the malware tries all hardcoded URLs against the victim for each vulnerability before it proceeds to the next target or next exploit attempt.
+All the exploits contain the payload that downloads a replica of the malware onto the victim via certutil. The following figures show examples of the attack traffic.
+ Figure 6. CVE-2019-9081 traffic Figure 7. ThinkPHP RCE traffic
+After the malware has launched all its worker threads, the malware enters an infinite loop to handle its C2 operation, with a sleep interval of five seconds.
+An example of the initial request to its C2 server is shown in Figure 8.
+ Figure 8. Initial request to C2 server
+Once the malware has established a TCP connection with its C2 server on port 15888, the malware saves that same socket for subsequent C2 control as well as the miner’s status report.
+The initial C2 request contains a magic header \x04\x02\x02 and encrypted system information like the host IP address, the system type, system architecture, username, number of processors, and processor frequency. The malware does a decremental-xor encryption on this piece of information before it sends the encrypted data over the wire. The encrypted data can be decrypted using the decryption routine described in Figure 1. For example, the decrypted host IP address in Figure 8 is 192.168.56[.]52. The decrypted Windows system is Windows 7 64Bit, and the decrypted username is Lebron James.
+Unlike its very first C2 request message, the rest of the miner’s status report messages are actually clear text. An example packet of the miner’s status report is shown in Figure 9 below.
+ Figure 9. Miner’s status report sent to C2 Server
+Table 3 summarizes the control codes received from the C2 server and their corresponding functionalities.
+C2 Command	Description
+4	Perform TCP/UDP/HTTP DoS attack.
+5	Reenable DoS attack.
+6	Download and execute a file from its C2 server. The file’s saved as %TEMP%\<4 random lower case characters>.exe
+7	Execute the received command from its C2 server.
+8	Disable the miner’s status report functionality.
+9	Enable the miner’s status report functionality.
+10	Set the data of the registry key value HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\spreadCpuXmr, and terminate the miner process.
+11	Enable both flags related to is_miner_killed and start_fresh
+12	Reset flags and terminate the miner process.
+Table 3. C2 description
+The communication between the cryptojacking bot and its mining server is made by using the Stratum protocol on port 10001 and is controlled by the execution of the spreadXfghij.exe program. This program accepts different parameters that control configuration settings of the running miner such as username, password, CPU usage, priority, threads, and algorithm names respectively.
+ Figure 10. XMRig Command-Line parameters
+The Stratum protocol is mainly used by miner software to connect to a centralized server, which coordinates the workload between the clients. This protocol satisfies the requirements of the JSON RPC 2.0 specification. The JSON-RPC requests and responses can be seen in Figure 11.
+ Figure 11. Lucifer bot exchanging the mining information.
+Lucifer: Version 2
+Version 2 of Lucifer is similar to its predecessor in terms of its overall capabilities and behaviors; It drops XMRig for cryptojacking, handles C2 operation, and propagates itself through exploitation and brute-forcing credentials.
+While version 2 and version 1 share a lot of behavioral similarities, version 2 does have exclusive differences that are worth highlighting.
+The malware possesses anti-sandbox capability by checking the username and the computer name of the infected host. If it finds a match in its predefined list of names as shown in Table 4, the malware halts itself from proceeding further.
+NMSDBOX	Avira
+WILBERT-SC	COMPUTERNAME
+XPAMASTC	CWSX
+Kappa	VBOX
+XXXX-OS	cuckoo
+cwsx-	nmsdbox
+qemu	sandbox
+virtual	wilbert-sc
+xpamast-sc	xxxx - ox
+cuckoosandbox	
+Table 4. List of Names
+Lucifer also checks for the presence of following device drivers, DLLs, and virtual devices. If any of these objects are detected, the malware enters an infinite loop, stopping its execution from going further.
+SbieDrv.sys	Sandboxie.sys
+SbieDll.dll	VBoxHook.dll
+\\.\VBoxMiniRdrDN	Dir_watch.dll
+\\.\pipe\cuckoo	
+Table 5. List of Driver Names
+In addition to its anti-sandbox techniques, version 2 possesses an anti-debugger technique that can thwart the analysis by passing a format string to OutputDebugStringA() and crashing the debugger.
+Once Lucifer has passed all the checks, it decrypts its C2 URL and creates a mutex based on its C2 URL. The new C2 URL is qf2020[.]top, and the decryption algorithm is shown in Figure 1.
+There’s an additional LNK resource section, in which there’s a CVE-2017-8464 exploit used for infection. The binaries in the resource section are encrypted using the aforementioned xor-incremental encryption. The decrypted X86, X64, and SMB binaries are the same as those embedded in version 1 of Lucifer.
+LNK (encrypted): 84b0f2e4d222b0a2e34224e60b66340071e0d03c5f1a2af53b6005a3d739915f
+LNK (decrypted): 4c729b343ed3186dffdf80a8e3adfea7c2d56a7a06081333030fb4635e09d540
+SMB (encrypted): F2d9d7703a5983ae3b7767c33ae79de1db093ea30f97d6b16bb5b62f03e99638
+SMB (decrypted): 5214f356f2e8640230e93a95633cd73945c38027b23e76bb5e617c71949f8994
+X64 (encrypted): 4365c2ba5505afeab2c479a9c546ed3cbc07ace184fe5019947823018feb4265
+X64 (decrypted): ac530d542a755ecce6a656ea6309717ec222c34d7e34c61792f3b350a8a29301
+X86 (encrypted): b6d4b4ef2880238dc8e322c7438f57b69cec6d44c0599875466a1edb8d093e15
+X86 (decrypted): 8edbcd63def33827bfd63bffce4a15ba83e88908f9ac9962f10431f571ba07a8
+In contrast to version 1, version 2 of Lucifer has added CVE-2017-8464 to its arsenal and taken out CVE-2018-1000861, CVE-2017-10271, and CVE-2017-9791.
+The malware infects its targets through IPC, WMI, SMB, and FTP by brute-forcing the credentials, in addition to MSSQL, RPC, and network shares.
+The dropped miner’s name is also different; it’s C:\\ProgramData\\Svchocpu.exe instead of C:\\ProgramData\\spreadXfghij.exe.
+Right before proceeding to its C2 operation, Lucifer checks if the host's default language is 0x804 (zh-CN). If it is, the malware sets Internet Explorer's Start Page to www[.]yzzswt[.]com, and starts a thread that keeps killing and visiting that URL in Internet Explorer. The trigger depends on the system's idle time.
+While Lucifer version 2 has new C2 at qf2020[.]top:19370, its C2 operation is still the same.
+Conclusion
+Lucifer is a new hybrid of cryptojacking and DDoS malware variant that leverages old vulnerabilities to spread and perform malicious activities on Windows platforms. Applying the updates and patches to the affected software are strongly advised. The vulnerable software includes Rejetto HTTP File Server, Jenkins, Oracle Weblogic, Drupal, Apache Struts, Laravel framework, and Microsoft Windows. Strong passwords are also encouraged to prevent dictionary attacks.
+Palo Alto Networks customers are protected from the attacks by the following products and services:
+•	
+•	Next-Generation Firewalls with Threat Prevention licenses can block the exploits and C2 traffic with best practice configuration.
+•	WildFire can stop the malware with static signature detections.
+•	AutoFocus customers can track this activity with the Lucifer tag.
+
+
+
